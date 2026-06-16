@@ -29,8 +29,8 @@
         .btn-save-print { background: var(--primary); color: #fff; font-size: 0.95rem; padding: 10px 22px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
         .btn-save-print:hover { background: #000; box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
         
-        .sync-banner { background: #f9f9f9; border: 1px solid #ddd; border-radius: 8px; padding: 10px 18px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 10px; font-family: 'Noto Kufi Arabic', sans-serif; font-size: 0.8rem; color: #000; flex-wrap: wrap; }
-        .sync-dot { width: 8px; height: 8px; background: #000; border-radius: 50%; display: inline-block; margin-left: 6px; animation: pulse 2s infinite; }
+        .sync-banner { background: #e8f5e9; border: 1px solid #c8e6c9; border-radius: 8px; padding: 10px 18px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 10px; font-family: 'Noto Kufi Arabic', sans-serif; font-size: 0.8rem; color: #1b5e20; flex-wrap: wrap; }
+        .sync-dot { width: 8px; height: 8px; background: #4caf50; border-radius: 50%; display: inline-block; margin-left: 6px; animation: pulse 2s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
         .voucher-container { background: var(--card-bg); border-radius: 16px; box-shadow: 0 8px 40px rgba(0,0,0,0.08); overflow: hidden; border: 2px solid var(--border-light); }
@@ -117,11 +117,7 @@
         <div class="sync-banner animate-in animate-delay-1">
             <div style="display:flex; align-items:center; gap:6px;">
                 <span class="sync-dot"></span>
-                <span>متزامن مع جميع المستخدمين - أي شخص يفتح الرابط يرى السندات</span>
-            </div>
-            <div style="display:flex; gap:6px;">
-                <button class="btn btn-secondary" onclick="exportData()" style="padding:6px 12px;font-size:0.75rem;"><i class="fas fa-download"></i> تصدير</button>
-                <button class="btn btn-secondary" onclick="importData()" style="padding:6px 12px;font-size:0.75rem;"><i class="fas fa-upload"></i> استيراد</button>
+                <span>متزامن سحابياً - السندات محفوظة على الإنترنت ويشاهدها الجميع</span>
             </div>
         </div>
 
@@ -190,73 +186,53 @@
         <div class="modal-actions"><button class="btn btn-danger" id="confirmDeleteBtn">نعم، احذف</button><button class="btn btn-secondary" onclick="closeModal('deleteModal')">إلغاء</button></div>
     </div></div>
 
-    <div class="modal-overlay" id="importModal"><div class="modal">
-        <div class="modal-title"><i class="fas fa-upload"></i> استيراد بيانات</div>
-        <div class="modal-text">الصق رابط المشاركة هنا لتحميل السندات من جهاز آخر:</div>
-        <input type="text" class="form-input" id="importInput" placeholder="الصق الرابط هنا..." style="margin-bottom:16px; direction:ltr;">
-        <div class="modal-actions"><button class="btn btn-save-print" onclick="processImport()">استيراد</button><button class="btn btn-secondary" onclick="closeModal('importModal')">إلغاء</button></div>
-    </div></div>
-
     <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastText"></span></div>
 
     <script>
-        let vouchers = JSON.parse(localStorage.getItem('vouchers') || '[]');
         let currentEditId = null;
         let logoBase64 = '', stampBase64 = '', sigBase64 = '';
+        let vouchers = []; // مصفوفة محلية لتخزين السندات مؤقتاً
 
         const LOGO_URL = 'https://z-cdn-media.chatglm.cn/files/c8131a03-97f3-4b99-a47c-05c6861f8abd.png?auth_key=1881422113-61ab2eb8e3f84596b98f52d6ebd5868f-0-de5300ffafb7078ec918dceabb733ab4';
         const STAMP_URL = 'https://z-cdn-media.chatglm.cn/files/d0e31b0c-835a-450f-a2e0-90f125b99912.jpeg?auth_key=1881512785-ee2ab6b60694419ca577a23978188d62-0-8d58c13d47a6829137b74ea403c70ea7';
         const SIG_URL = 'https://z-cdn-media.chatglm.cn/files/af68f218-0951-4e39-aba5-35056661ea0c.jpeg?auth_key=1881512785-a926fb1d2c34493997f898f3ab6e3b5b-0-76b711c3c05f9125224e4b468eaf8520';
 
-        const channel = new BroadcastChannel('voucher_sync_channel');
-        channel.onmessage = function(e) {
-            if (e.data && e.data.type === 'SYNC_VOUCHERS') {
-                vouchers = e.data.vouchers;
-                localStorage.setItem('vouchers', JSON.stringify(vouchers));
+        // ========== إعدادات قاعدة البيانات السحابية (JSONBin) ==========
+        const BIN_ID = '664d01e3e41ec40f5a3c7b3b'; // معرف قاعدة البيانات السحابية
+        const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}/latest`;
+        const MASTER_KEY = '$2a$10$OdUlwjCxGJDHv5N4QC1OYuHK6f5MZZqzLqfJ/Q4xr6fIjT6fTWySO'; // مفتاح التعديل
+        
+        // جلب البيانات من السحابة
+        async function fetchVouchers() {
+            try {
+                const response = await fetch(API_URL, { headers: { 'X-Master-Key': MASTER_KEY }});
+                const data = await response.json();
+                vouchers = data.record.vouchers || [];
                 renderRecords();
-                showToast('تم تحديث السندات تلقائياً', 'success');
+            } catch (e) {
+                console.error('Error fetching data:', e);
+                showToast('خطأ في تحميل البيانات السحابية', 'error');
             }
-        };
-        function broadcastUpdate() { channel.postMessage({ type: 'SYNC_VOUCHERS', vouchers: vouchers }); }
+        }
 
-        function loadFromURL() {
-            const h = window.location.hash;
-            if (h && h.startsWith('#data=')) {
-                try {
-                    const json = decodeURIComponent(escape(atob(h.substring(6))));
-                    const data = JSON.parse(json);
-                    if (data && Array.isArray(data)) {
-                        let added = 0;
-                        data.forEach(v => { if (!vouchers.find(x => x.id === v.id)) { vouchers.push(v); added++; } });
-                        if (added > 0) { localStorage.setItem('vouchers', JSON.stringify(vouchers)); broadcastUpdate(); showToast(`تم تحميل ${added} سند`, 'success'); history.replaceState(null, '', window.location.pathname); }
-                    }
-                } catch(e) {}
+        // حفظ البيانات في السحابة
+        async function saveVouchersToCloud() {
+            try {
+                const response = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': MASTER_KEY
+                    },
+                    body: JSON.stringify({ vouchers: vouchers })
+                });
+                if (!response.ok) throw new Error('Save failed');
+            } catch (e) {
+                console.error('Error saving data:', e);
+                showToast('خطأ في حفظ البيانات سحابياً', 'error');
             }
         }
-        function exportData() {
-            if (!vouchers.length) { showToast('لا توجد سندات لتصديرها', 'error'); return; }
-            try {
-                const json = JSON.stringify(vouchers);
-                const encoded = btoa(unescape(encodeURIComponent(json)));
-                const link = window.location.origin + window.location.pathname + '#data=' + encoded;
-                const textarea = document.createElement('textarea');
-                textarea.value = link; document.body.appendChild(textarea); textarea.select(); document.execCommand('copy'); document.body.removeChild(textarea);
-                showToast('تم نسخ رابط المشاركة!', 'success');
-            } catch(e) { showToast('حدث خطأ', 'error'); }
-        }
-        function importData() { document.getElementById('importInput').value = ''; document.getElementById('importModal').classList.add('show'); }
-        function processImport() {
-            const url = document.getElementById('importInput').value.trim();
-            if (!url) { showToast('الصق الرابط أولاً', 'error'); return; }
-            try {
-                const hashIndex = url.indexOf('#data='); if (hashIndex === -1) { showToast('رابط غير صالح', 'error'); return; }
-                const encoded = url.substring(hashIndex + 6); const json = decodeURIComponent(escape(atob(encoded))); const data = JSON.parse(json);
-                let added = 0; data.forEach(v => { if (!vouchers.find(x => x.id === v.id)) { vouchers.push(v); added++; } });
-                if (added > 0) { localStorage.setItem('vouchers', JSON.stringify(vouchers)); renderRecords(); broadcastUpdate(); showToast(`تم استيراد ${added} سند`, 'success'); }
-                else { showToast('السندات موجودة مسبقاً', 'success'); }
-                closeModal('importModal');
-            } catch(e) { showToast('فشل الاستيراد', 'error'); }
-        }
+        // ==============================================================
 
         function loadImgAsBase64(url, onLoad) {
             const img = new Image(); img.crossOrigin = 'anonymous';
@@ -274,33 +250,126 @@
             try { const p=new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura',{day:'numeric',month:'long',year:'numeric'}).formatToParts(d); let dy='',mo='',yr=''; for(const x of p){if(x.type==='day')dy=x.value;if(x.type==='month')mo=x.value;if(x.type==='year')yr=x.value;} const tw=s=>s.replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)); return `${tw(dy)} ${mo} ${tw(yr)}هـ`; } catch(e){ return ''; }
         }
 
-        document.addEventListener('DOMContentLoaded', function() { loadAllImages(); loadFromURL(); generateVoucherNumber(); setCurrentDate(); renderRecords(); });
+        document.addEventListener('DOMContentLoaded', function() { loadAllImages(); fetchVouchers(); setCurrentDate(); });
 
-        function generateVoucherNumber() { const n=new Date(); const dp=`${n.getFullYear()}${String(n.getMonth()+1).padStart(2,'0')}${String(n.getDate()).padStart(2,'0')}`; const cnt=vouchers.filter(v=>v.voucherNumber&&v.voucherNumber.includes(dp)).length; const vn=`${dp}/${cnt+1}`; document.getElementById('voucherNumber').textContent=vn; document.getElementById('footerVoucherNo').textContent=vn; return vn; }
-        function setCurrentDate() { const n=new Date(); document.getElementById('voucherDate').textContent=`${String(n.getDate()).padStart(2,'0')}/${String(n.getMonth()+1).padStart(2,'0')}/${n.getFullYear()}`; document.getElementById('voucherDateHijri').textContent=getHijriDateString(n); document.getElementById('voucherTime').textContent=`${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`; }
+        function generateVoucherNumber() { 
+            const n=new Date(); 
+            const dp=`${n.getFullYear()}${String(n.getMonth()+1).padStart(2,'0')}${String(n.getDate()).padStart(2,'0')}`; 
+            const cnt = vouchers.filter(v => v.voucherNumber && v.voucherNumber.includes(dp)).length;
+            const vn = `${dp}/${cnt+1}`;
+            document.getElementById('voucherNumber').textContent = vn;
+            document.getElementById('footerVoucherNo').textContent = vn;
+        }
+        
+        function setCurrentDate() { const n=new Date(); document.getElementById('voucherDate').textContent=`${String(n.getDate()).padStart(2,'0')}/${String(n.getMonth()+1).padStart(2,'0')}/${n.getFullYear()}`; document.getElementById('voucherDateHijri').textContent=getHijriDateString(n); document.getElementById('voucherTime').textContent=`${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`; generateVoucherNumber(); }
         function convertAmountToText() { const a=parseFloat(document.getElementById('amount').value); if(isNaN(a)||a===0){document.getElementById('amountText').value='';return;} document.getElementById('amountText').value=numberToArabicWords(a)+' ريال فقط لا غير'; }
         function numberToArabicWords(num) { if(num===0)return 'صفر'; const o=['','واحد','اثنان','ثلاثة','أربعة','خمسة','ستة','سبعة','ثمانية','تسعة','عشرة','أحد عشر','اثنا عشر','ثلاثة عشر','أربعة عشر','خمسة عشر','ستة عشر','سبعة عشر','ثمانية عشر','تسعة عشر']; const t=['','','عشرون','ثلاثون','أربعون','خمسون','ستون','سبعون','ثمانون','تسعون']; const h=['','مائة','مائتان','ثلاثمائة','أربعمائة','خمسمائة','ستمائة','سبعمائة','ثمانمائة','تسعمائة']; const ip=Math.floor(num),dp=Math.round((num-ip)*100); let r=''; if(ip>0)r=cI(ip,o,t,h); if(dp>0){if(r)r+=' و ';r+=cI(dp,o,t,h)+' هللة';} return r; }
         function cI(n,o,t,h) { if(n<20)return o[n]; if(n<100){const a=Math.floor(n/10),b=n%10;return b?o[b]+' و'+t[a]:t[a];} if(n<1000){const a=Math.floor(n/100),b=n%100;return b?h[a]+' و'+cI(b,o,t,h):h[a];} if(n<1e6){const a=Math.floor(n/1000),b=n%1000;let s='';if(a===1)s='ألف';else if(a===2)s='ألفان';else if(a<11)s=cI(a,o,t,h)+' آلاف';else s=cI(a,o,t,h)+' ألف';return b?s+' و'+cI(b,o,t,h):s;} if(n<1e9){const a=Math.floor(n/1e6),b=n%1e6;let s='';if(a===1)s='مليون';else if(a===2)s='مليونان';else if(a<11)s=cI(a,o,t,h)+' ملايين';else s=cI(a,o,t,h)+' مليون';return b?s+' و'+cI(b,o,t,h):s;} return n.toString(); }
 
-        function saveAndPrint() {
+        async function saveAndPrint() {
             const pn=document.getElementById('payerName').value.trim(),pm=document.getElementById('paymentMethod').value,am=document.getElementById('amount').value,pr=document.getElementById('paymentReason').value.trim();
             if(!pn){showToast('يرجى إدخال اسم الدافع','error');document.getElementById('payerName').focus();return;} if(!pm){showToast('يرجى اختيار طريقة الدفع','error');document.getElementById('paymentMethod').focus();return;} if(!am||parseFloat(am)<=0){showToast('يرجى إدخال المبلغ','error');document.getElementById('amount').focus();return;} if(!pr){showToast('يرجى إدخال سبب الدفع','error');document.getElementById('paymentReason').focus();return;}
-            const v={id:currentEditId||Date.now().toString(),voucherNumber:document.getElementById('voucherNumber').textContent,date:document.getElementById('voucherDate').textContent,dateHijri:document.getElementById('voucherDateHijri').textContent,time:document.getElementById('voucherTime').textContent,recipient:document.getElementById('recipientName').value,payer:pn,paymentMethod:pm,amount:parseFloat(am),amountText:document.getElementById('amountText').value,reason:pr,notes:document.getElementById('notes').value.trim()};
-            if(currentEditId){const idx=vouchers.findIndex(x=>x.id===currentEditId);if(idx!==-1)vouchers[idx]=v;currentEditId=null;showToast('تم التعديل، جاري الطباعة...','success');}else{vouchers.push(v);showToast('تم الحفظ، جاري الطباعة...','success');}
-            localStorage.setItem('vouchers',JSON.stringify(vouchers)); broadcastUpdate(); renderRecords();
-            setTimeout(()=>{const w=window.open('','_blank','width=800,height=1000');w.document.write(buildPrintHTML(v));w.document.close();newVoucher();},500);
+            
+            const vData = {
+                id: currentEditId || Date.now().toString(),
+                voucherNumber: document.getElementById('voucherNumber').textContent,
+                date: document.getElementById('voucherDate').textContent,
+                dateHijri: document.getElementById('voucherDateHijri').textContent,
+                time: document.getElementById('voucherTime').textContent,
+                recipient: document.getElementById('recipientName').value,
+                payer: pn,
+                paymentMethod: pm,
+                amount: parseFloat(am),
+                amountText: document.getElementById('amountText').value,
+                reason: pr,
+                notes: document.getElementById('notes').value.trim()
+            };
+
+            if (currentEditId) {
+                const idx = vouchers.findIndex(x => x.id === currentEditId);
+                if(idx !== -1) vouchers[idx] = vData;
+                showToast('جاري التعديل والحفظ السحابي...', 'success');
+            } else {
+                vouchers.push(vData);
+                showToast('جاري الحفظ السحابي...', 'success');
+            }
+
+            await saveVouchersToCloud();
+            renderRecords();
+            printVoucherData(vData);
+            newVoucher();
         }
-        function newVoucher() { currentEditId=null; generateVoucherNumber(); setCurrentDate(); ['payerName','amount','amountText','paymentReason','notes'].forEach(id=>document.getElementById(id).value=''); document.getElementById('paymentMethod').value=''; }
+
+        function newVoucher() { currentEditId=null; setCurrentDate(); ['payerName','amount','amountText','paymentReason','notes'].forEach(id=>document.getElementById(id).value=''); document.getElementById('paymentMethod').value=''; }
         function getPaymentAr(m){return{'cash':'نقدي','cheque':'شيك','transfer':'تحويل بنكي','mada':'شبكة','other':'أخرى'}[m]||m;}
 
         function renderRecords() {
-            const tb=document.getElementById('recordsBody'),es=document.getElementById('emptyState'); document.getElementById('recordsCount').textContent=vouchers.length;
-            if(!vouchers.length){tb.innerHTML='';es.style.display='block';return;} es.style.display='none';
-            tb.innerHTML=vouchers.map((v,i)=>`<tr><td>${i+1}</td><td style="font-weight:700;">${v.voucherNumber}</td><td>${v.date}<br><span style="font-size:0.72rem;color:#000;">${v.dateHijri||''}</span></td><td>${v.payer}</td><td style="font-weight:700;">${v.amount.toLocaleString('en-US')} ر.س</td><td><span class="badge">${getPaymentAr(v.paymentMethod)}</span></td><td><div class="action-btns"><button class="action-btn" onclick="editVoucher('${v.id}')"><i class="fas fa-pen"></i></button><button class="action-btn" onclick="printSingleVoucher('${v.id}')"><i class="fas fa-print"></i></button><button class="action-btn" onclick="confirmDeleteVoucher('${v.id}')"><i class="fas fa-trash"></i></button></div></td></tr>`).join('');
+            const tb = document.getElementById('recordsBody'), es = document.getElementById('emptyState');
+            document.getElementById('recordsCount').textContent = vouchers.length;
+            
+            if (!vouchers.length) { tb.innerHTML = ''; es.style.display = 'block'; return; } 
+            es.style.display = 'none';
+            
+            tb.innerHTML = [...vouchers].reverse().map((v, i) => 
+                `<tr>
+                    <td>${i+1}</td>
+                    <td style="font-weight:700;">${v.voucherNumber}</td>
+                    <td>${v.date}<br><span style="font-size:0.72rem;color:#000;">${v.dateHijri||''}</span></td>
+                    <td>${v.payer}</td>
+                    <td style="font-weight:700;">${v.amount.toLocaleString('en-US')} ر.س</td>
+                    <td><span class="badge">${getPaymentAr(v.paymentMethod)}</span></td>
+                    <td><div class="action-btns">
+                        <button class="action-btn" onclick="editVoucher('${v.id}')"><i class="fas fa-pen"></i></button>
+                        <button class="action-btn" onclick="printSingleVoucher('${v.id}')"><i class="fas fa-print"></i></button>
+                        <button class="action-btn" onclick="confirmDeleteVoucher('${v.id}')"><i class="fas fa-trash"></i></button>
+                    </div></td>
+                </tr>`
+            ).join('');
         }
-        function editVoucher(id) { const v=vouchers.find(x=>x.id===id); if(!v)return; currentEditId=id; document.getElementById('voucherNumber').textContent=v.voucherNumber; document.getElementById('footerVoucherNo').textContent=v.voucherNumber; document.getElementById('voucherDate').textContent=v.date; document.getElementById('voucherDateHijri').textContent=v.dateHijri||''; document.getElementById('voucherTime').textContent=v.time; document.getElementById('payerName').value=v.payer; document.getElementById('paymentMethod').value=v.paymentMethod; document.getElementById('amount').value=v.amount; document.getElementById('amountText').value=v.amountText||''; document.getElementById('paymentReason').value=v.reason; document.getElementById('notes').value=v.notes||''; window.scrollTo({top:0,behavior:'smooth'}); showToast('جاري تعديل السند','success'); }
-        function confirmDeleteVoucher(id) { document.getElementById('deleteModalText').textContent='هل أنت متأكد من حذف هذا السند؟'; document.getElementById('confirmDeleteBtn').onclick=function(){vouchers=vouchers.filter(v=>v.id!==id);localStorage.setItem('vouchers',JSON.stringify(vouchers));broadcastUpdate();renderRecords();closeModal('deleteModal');showToast('تم حذف السند','success');}; document.getElementById('deleteModal').classList.add('show'); }
-        function confirmClearAll() { if(!vouchers.length){showToast('لا توجد سندات','error');return;} document.getElementById('deleteModalText').textContent=`حذف جميع السندات (${vouchers.length})؟`; document.getElementById('confirmDeleteBtn').onclick=function(){vouchers=[];localStorage.setItem('vouchers','[]');broadcastUpdate();renderRecords();closeModal('deleteModal');showToast('تم حذف الكل','success');}; document.getElementById('deleteModal').classList.add('show'); }
+
+        function editVoucher(id) { 
+            const v = vouchers.find(x => x.id === id); 
+            if(!v) return; 
+            currentEditId = id; 
+            document.getElementById('voucherNumber').textContent = v.voucherNumber; 
+            document.getElementById('footerVoucherNo').textContent = v.voucherNumber; 
+            document.getElementById('voucherDate').textContent = v.date; 
+            document.getElementById('voucherDateHijri').textContent = v.dateHijri||''; 
+            document.getElementById('voucherTime').textContent = v.time; 
+            document.getElementById('payerName').value = v.payer; 
+            document.getElementById('paymentMethod').value = v.paymentMethod; 
+            document.getElementById('amount').value = v.amount; 
+            document.getElementById('amountText').value = v.amountText||''; 
+            document.getElementById('paymentReason').value = v.reason; 
+            document.getElementById('notes').value = v.notes||''; 
+            window.scrollTo({top:0,behavior:'smooth'}); 
+            showToast('جاري تعديل السند','success'); 
+        }
+
+        async function confirmDeleteVoucher(id) { 
+            document.getElementById('deleteModalText').textContent='هل أنت متأكد من حذف هذا السند؟'; 
+            document.getElementById('confirmDeleteBtn').onclick = async function(){
+                vouchers = vouchers.filter(v => v.id !== id);
+                await saveVouchersToCloud();
+                renderRecords();
+                closeModal('deleteModal');
+                showToast('تم حذف السند سحابياً','success');
+            }; 
+            document.getElementById('deleteModal').classList.add('show'); 
+        }
+
+        async function confirmClearAll() { 
+            document.getElementById('deleteModalText').textContent=`حذف جميع السندات؟`; 
+            document.getElementById('confirmDeleteBtn').onclick = async function(){
+                vouchers = [];
+                await saveVouchersToCloud();
+                renderRecords();
+                closeModal('deleteModal');
+                showToast('تم حذف الكل سحابياً','success');
+            }; 
+            document.getElementById('deleteModal').classList.add('show'); 
+        }
+
         function closeModal(id){document.getElementById(id).classList.remove('show');}
         document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',function(e){if(e.target===this)this.classList.remove('show');}));
 
@@ -335,7 +404,16 @@
 <script>window.onload=function(){setTimeout(function(){window.print();},500);}<\/script></body></html>`;
         }
 
-        function printSingleVoucher(id){const v=vouchers.find(x=>x.id===id);if(!v)return;const w=window.open('','_blank','width=800,height=1000');w.document.write(buildPrintHTML(v));w.document.close();}
+        function printVoucherData(data) {
+            setTimeout(()=>{const w=window.open('','_blank','width=800,height=1000');w.document.write(buildPrintHTML(data));w.document.close();},500);
+        }
+
+        function printSingleVoucher(id){ 
+            const v = vouchers.find(x => x.id === id);
+            if(!v) return;
+            printVoucherData(v);
+        }
+
         function showToast(msg,type='success'){const t=document.getElementById('toast'),tt=document.getElementById('toastText'),ic=t.querySelector('i');tt.textContent=msg;t.className='toast';ic.className=type==='error'?'fas fa-exclamation-circle':'fas fa-check-circle';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
         setInterval(()=>{if(!currentEditId)setCurrentDate();},60000);
     </script>
