@@ -1391,7 +1391,11 @@
     const amountWordsText=escapeHTML(amountWords);
     const companyName=escapeHTML(COMPANY.nameAr);
 
-    // سندات الصادر تستخدم نفس تصميم سندات القبض حرفياً، بدون أي طبقات أو تسميات بديلة.
+    // سندات الصادر تستخدم نفس تصميم سندات القبض، مع تغيير العنوان العلوي فقط إلى "سند صرف".
+    const outgoingTitleOverlay=type==='outgoing'?`
+      <rect x="198" y="126" width="104" height="32" fill="#fff"/>
+      <foreignObject x="198" y="126" width="104" height="32"><div xmlns="http://www.w3.org/1999/xhtml" class="fo title-fo">${title}</div></foreignObject>`:'';
+
     const commonFooterNumber=`
       <rect x="27" y="673" width="69" height="23" fill="#fff"/>
       <foreignObject x="27" y="673" width="69" height="23"><div xmlns="http://www.w3.org/1999/xhtml" class="fo footer-number-fo">${voucherNo}</div></foreignObject>`;
@@ -1430,6 +1434,7 @@
     </style><div class="screen-wrap">
       <svg class="receipt-svg" viewBox="0 0 595.2756 841.8898" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" preserveAspectRatio="xMidYMid meet">
         <image href="${templateImage}" x="0" y="0" width="595.2756" height="841.8898" preserveAspectRatio="none"/>
+        ${outgoingTitleOverlay}
 
         <!-- Signature: enlarged to match the supplied original model -->
         <rect x="280" y="595" width="150" height="33" fill="#fff"/>
