@@ -1425,11 +1425,39 @@
         .receipt-svg{width:100%;height:auto}
       }
       @media print{
+        /* Keep the printable document physically limited to the receipt height so iOS cannot paginate a blank second sheet.
+           iOS/Safari can otherwise create a second blank page because of
+           fractional page-height rounding and browser footer reservation. */
+        html,body{
+          margin:0!important;padding:0!important;
+          width:210mm!important;height:250mm!important;
+          min-width:0!important;min-height:0!important;max-height:250mm!important;
+          overflow:hidden!important;
+          break-after:avoid-page!important;page-break-after:avoid!important
+        }
         body>*:not(#receiptPrintHost){display:none!important}
-        html,body{width:100%!important;height:auto!important;min-height:0!important;overflow:visible!important}
-        #receiptPrintHost{display:block!important;position:static!important;left:auto!important;top:auto!important;width:100%!important;height:auto!important;overflow:visible!important;pointer-events:auto!important;direction:ltr!important;break-inside:avoid!important;page-break-inside:avoid!important}
-        .screen-wrap{width:175mm!important;height:247.5mm!important;padding:0!important;margin:0 auto!important;display:block!important;overflow:hidden!important;break-inside:avoid!important;page-break-inside:avoid!important}
-        .receipt-svg{width:175mm!important;height:247.5mm!important;break-inside:avoid!important;page-break-inside:avoid!important}
+        #receiptPrintHost{
+          display:block!important;position:absolute!important;
+          left:0!important;top:0!important;right:auto!important;bottom:auto!important;
+          width:210mm!important;height:250mm!important;max-height:250mm!important;
+          margin:0!important;padding:0!important;overflow:hidden!important;
+          pointer-events:auto!important;direction:ltr!important;
+          break-inside:avoid!important;page-break-inside:avoid!important;
+          break-after:avoid-page!important;page-break-after:avoid!important
+        }
+        .screen-wrap{
+          width:175mm!important;height:247.5mm!important;
+          padding:0!important;margin:0 auto!important;display:block!important;
+          overflow:hidden!important;
+          break-inside:avoid!important;page-break-inside:avoid!important;
+          break-after:avoid-page!important;page-break-after:avoid!important
+        }
+        .receipt-svg{
+          display:block!important;width:175mm!important;height:247.5mm!important;
+          max-width:175mm!important;max-height:247.5mm!important;overflow:hidden!important;
+          break-inside:avoid!important;page-break-inside:avoid!important;
+          break-after:avoid-page!important;page-break-after:avoid!important
+        }
       }
     </style><div class="screen-wrap">
       <svg class="receipt-svg" viewBox="0 0 595.2756 841.8898" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" preserveAspectRatio="xMidYMid meet">
