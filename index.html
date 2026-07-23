@@ -77,6 +77,7 @@
     .btn-soft{background:#eef2f7;color:var(--ink)}
     .btn-outline{background:#fff;color:var(--ink);border:1px solid var(--line-2)}
     .btn-danger{background:var(--danger-soft);color:var(--danger);border:1px solid #fecdd3}
+    .btn-success{background:var(--success-soft);color:var(--success);border:1px solid #bbf7d0}
     .btn-link{background:transparent;color:var(--primary);padding:6px 0;min-height:auto}
     .btn-block{width:100%}
 
@@ -389,7 +390,7 @@
     .booking-card h3{font:800 .82rem 'Noto Kufi Arabic',sans-serif;margin-bottom:4px}
     .booking-card-ref{font:600 .62rem 'Noto Kufi Arabic',sans-serif;color:var(--muted);direction:ltr;text-align:right}
     .booking-status{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 10px;font:700 .61rem 'Noto Kufi Arabic',sans-serif;white-space:nowrap}
-    .booking-status.pending{background:#fff7ed;color:#9a3412}.booking-status.scheduled{background:#eff6ff;color:#1d4ed8}.booking-status.completed{background:#ecfdf3;color:#15803d}.booking-status.rejected,.booking-status.cancelled{background:#fff1f2;color:#b91c1c}
+    .booking-status.pending{background:#fff7ed;color:#9a3412}.booking-status.accepted{background:#ecfdf3;color:#15803d}.booking-status.scheduled{background:#eff6ff;color:#1d4ed8}.booking-status.completed{background:#ecfdf3;color:#15803d}.booking-status.rejected,.booking-status.cancelled{background:#fff1f2;color:#b91c1c}
     .booking-card-info{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px}
     .booking-info-item{padding:10px;background:#f8fafc;border-radius:10px;min-width:0}
     .booking-info-item small{display:block;color:var(--muted);font:600 .59rem 'Noto Kufi Arabic',sans-serif;margin-bottom:4px}
@@ -426,11 +427,10 @@
           <img src="assets/logo.webp" alt="شعار حلول المنازل للعوازل">
           <div><h1>شركة حلول المنازل للعوازل</h1><p>طلب موعد تمتير وتسعير الموقع</p></div>
         </div>
-        <a class="btn btn-outline" href="./"><i class="fa-solid fa-lock"></i> دخول الإدارة</a>
       </header>
       <section class="booking-public-card">
         <div class="booking-public-intro">
-          <div><h2>احجز موعد معاينة الموقع</h2><p>أدخل بياناتك وحدد موقع المنزل من الخريطة وارفع صورة واضحة للواجهة. سيتواصل معك فريقنا لتأكيد الموعد وإعداد التسعيرة المناسبة.</p></div>
+          <div><h2>احجز موعد</h2><p>أدخل بياناتك وحدد موقع المنزل من الخريطة وارفع صورة واضحة للواجهة. سيتواصل معك فريقنا لتأكيد الموعد وإعداد التسعيرة المناسبة.</p></div>
           <i class="fa-solid fa-house-circle-check"></i>
         </div>
         <div id="bookingFormPanel" class="booking-public-body">
@@ -657,7 +657,7 @@
           </div>
           <section class="card">
             <div class="card-body">
-              <div class="filters"><div class="filter-field search-filter"><label>بحث</label><input id="bookingSearch" class="input" placeholder="الاسم، الجوال، الحي أو رقم الطلب"></div><div class="filter-field"><label>الحالة</label><select id="bookingStatusFilter" class="select"><option value="all">كل الحالات</option><option value="pending">بانتظار المراجعة</option><option value="scheduled">مجدول</option><option value="completed">مكتمل</option><option value="rejected">مرفوض</option><option value="cancelled">ملغي</option></select></div><button id="bookingClearFilters" class="btn btn-soft" type="button"><i class="fa-solid fa-filter-circle-xmark"></i></button></div>
+              <div class="filters"><div class="filter-field search-filter"><label>بحث</label><input id="bookingSearch" class="input" placeholder="الاسم، الجوال، الحي أو رقم الطلب"></div><div class="filter-field"><label>الحالة</label><select id="bookingStatusFilter" class="select"><option value="all">كل الحالات</option><option value="pending">بانتظار المراجعة</option><option value="accepted">مقبول</option><option value="scheduled">مجدول</option><option value="completed">مكتمل</option><option value="rejected">مرفوض</option><option value="cancelled">ملغي</option></select></div><button id="bookingClearFilters" class="btn btn-soft" type="button"><i class="fa-solid fa-filter-circle-xmark"></i></button></div>
             </div>
           </section>
           <div id="bookingAdminList" class="booking-admin-grid" style="margin-top:14px"></div>
@@ -753,13 +753,13 @@
           </div>
           <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
           <div class="form-grid">
-            <div class="field"><label for="bookingAdminStatus">حالة الطلب</label><select id="bookingAdminStatus" class="select"><option value="pending">بانتظار المراجعة</option><option value="scheduled">مجدول</option><option value="completed">مكتمل</option><option value="rejected">مرفوض</option><option value="cancelled">ملغي</option></select></div>
+            <div class="field"><label for="bookingAdminStatus">حالة الطلب</label><select id="bookingAdminStatus" class="select"><option value="pending">بانتظار المراجعة</option><option value="accepted">مقبول</option><option value="scheduled">مجدول</option><option value="completed">مكتمل</option><option value="rejected">مرفوض</option><option value="cancelled">ملغي</option></select></div>
             <div class="field"><label for="bookingScheduledDate">تاريخ الموعد المعتمد</label><input id="bookingScheduledDate" class="input" type="date"></div>
             <div class="field"><label for="bookingScheduledTime">وقت الموعد المعتمد</label><input id="bookingScheduledTime" class="input" type="time"></div>
             <div class="field span-2"><label for="bookingAdminNotes">ملاحظات الإدارة</label><textarea id="bookingAdminNotes" class="textarea" maxlength="1500" placeholder="ملاحظات التواصل أو التسعير أو سبب الرفض والإلغاء"></textarea></div>
           </div>
         </div>
-        <div class="modal-actions"><div class="left-actions"><button id="bookingRejectBtn" class="btn btn-danger" type="button"><i class="fa-solid fa-ban"></i> رفض الطلب</button><button id="bookingCancelBtn" class="btn btn-soft" type="button"><i class="fa-solid fa-calendar-xmark"></i> إلغاء الموعد</button></div><button class="btn btn-soft" type="button" data-close-modal="bookingAdminModal">إغلاق</button><button id="bookingAdminSaveBtn" class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> حفظ التغييرات</button></div>
+        <div class="modal-actions"><div class="left-actions"><button id="bookingRejectBtn" class="btn btn-danger" type="button"><i class="fa-solid fa-ban"></i> رفض الطلب</button><button id="bookingAcceptBtn" class="btn btn-success" type="button"><i class="fa-solid fa-circle-check"></i> قبول الطلب</button></div><button class="btn btn-soft" type="button" data-close-modal="bookingAdminModal">إغلاق</button><button id="bookingAdminSaveBtn" class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> حفظ التغييرات</button></div>
       </form>
     </div>
   </div>
@@ -894,7 +894,7 @@
     $('bookingClearFilters').addEventListener('click',()=>{$('bookingSearch').value='';$('bookingStatusFilter').value='all';renderBookings()});
     $('bookingAdminForm').addEventListener('submit',saveBookingAdminChanges);
     $('bookingRejectBtn').addEventListener('click',()=>quickBookingStatus('rejected'));
-    $('bookingCancelBtn').addEventListener('click',()=>quickBookingStatus('cancelled'));
+    $('bookingAcceptBtn').addEventListener('click',()=>quickBookingStatus('accepted'));
 
     $('addTaskBtn').addEventListener('click', ()=>openTaskModal());
     $('taskForm').addEventListener('submit', saveScheduleTask);
@@ -1522,7 +1522,7 @@
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`,'_blank','noopener,noreferrer');
   }
 
-  function openConfirm(title,message,handler){$('confirmTitle').textContent=title;$('confirmMessage').textContent=message;state.confirmHandler=handler;openModal('confirmModal')}
+  function openConfirm(title,message,handler,tone='danger'){const btn=$('confirmActionBtn');$('confirmTitle').textContent=title;$('confirmMessage').textContent=message;btn.className=`btn ${tone==='success'?'btn-success':tone==='primary'?'btn-primary':'btn-danger'}`;state.confirmHandler=handler;openModal('confirmModal')}
   function setConfirmBusy(busy){$('confirmActionBtn').disabled=busy;$('confirmActionBtn').textContent=busy?'جاري التنفيذ...':'تأكيد'}
   function openModal(id){$(id).classList.add('show')}
   function closeModal(id){$(id).classList.remove('show');if(id==='confirmModal'){state.confirmHandler=null;setConfirmBusy(false)}}
@@ -1740,7 +1740,7 @@
   }
 
   function initializeCustomerBookingPortal(){
-    document.title='حجز موعد معاينة | حلول المنازل للعوازل';
+    document.title='حجز موعد | حلول المنازل للعوازل';
     $('customerPreferredDate').min=todayISO();
     if(!$('customerPreferredDate').value)$('customerPreferredDate').value=todayISO();
     setTimeout(initCustomerBookingMap,80);
@@ -1751,7 +1751,12 @@
     if(!window.L){$('customerLocationText').textContent='تعذر تحميل الخريطة. تحقق من اتصال الإنترنت ثم أعد فتح الصفحة.';showToast('تعذر تحميل الخريطة','تحقق من اتصال الإنترنت ثم أعد المحاولة','error');return;}
     const defaultPoint=[24.7136,46.6753];
     customerBookingMap=L.map('customerLocationMap',{zoomControl:true}).setView(defaultPoint,11);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(customerBookingMap);
+    const streets=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Tiles &copy; Esri'});
+    const imagery=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Tiles &copy; Esri'});
+    const labels=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Labels &copy; Esri',pane:'overlayPane'});
+    const satellite=L.layerGroup([imagery,labels]);
+    streets.addTo(customerBookingMap);
+    L.control.layers({'خريطة الشوارع':streets,'القمر الصناعي':satellite},null,{position:'topleft',collapsed:true}).addTo(customerBookingMap);
     customerBookingMap.on('click',event=>setCustomerBookingLocation(event.latlng.lat,event.latlng.lng,true));
     setTimeout(()=>customerBookingMap.invalidateSize(),150);
   }
@@ -1847,14 +1852,14 @@
     state.bookings=rows;renderBookings();
   }
 
-  function bookingStatusLabel(status){return {pending:'بانتظار المراجعة',scheduled:'مجدول',completed:'مكتمل',rejected:'مرفوض',cancelled:'ملغي'}[status]||status||'—'}
+  function bookingStatusLabel(status){return {pending:'بانتظار المراجعة',accepted:'مقبول',scheduled:'مجدول',completed:'مكتمل',rejected:'مرفوض',cancelled:'ملغي'}[status]||status||'—'}
   function bookingReference(id){return `REQ-${String(id||'').slice(0,8).toUpperCase()}`}
   function bookingMapUrl(row){return `https://www.google.com/maps?q=${encodeURIComponent(row.location_lat+','+row.location_lng)}`}
   function bookingWhatsAppUrl(row){
     const text=`مرحباً ${row.customer_name}، معك شركة حلول المنازل للعوازل بخصوص طلب معاينة الموقع رقم ${bookingReference(row.id)}.`;
     return `https://wa.me/${phoneToWhatsApp(row.customer_phone)}?text=${encodeURIComponent(text)}`;
   }
-  function preferredBookingText(row){return `${formatDate(row.preferred_date)} — ${String(row.preferred_time||'').slice(0,5)}`}
+  function preferredBookingText(row){const day=weekdayNameFromISO(row.preferred_date);return `${day?day+' — ':''}${formatDate(row.preferred_date)} — ${String(row.preferred_time||'').slice(0,5)}`}
 
   function filteredBookings(){
     const search=$('bookingSearch')?.value.trim().toLowerCase()||'',status=$('bookingStatusFilter')?.value||'all';
@@ -1908,8 +1913,9 @@
   async function saveBookingAdminChanges(event){event.preventDefault();await persistBookingAdminChanges()}
 
   function quickBookingStatus(status){
-    const labels={rejected:'رفض هذا الطلب؟',cancelled:'إلغاء هذا الموعد؟'};
-    openConfirm('تأكيد الإجراء',labels[status]||'تأكيد تغيير الحالة؟',async()=>{closeModal('confirmModal');$('bookingAdminStatus').value=status;await persistBookingAdminChanges(status)});
+    const labels={accepted:'قبول هذا الطلب؟',rejected:'رفض هذا الطلب؟',cancelled:'إلغاء هذا الموعد؟'};
+    const tone=status==='accepted'?'success':'danger';
+    openConfirm('تأكيد الإجراء',labels[status]||'تأكيد تغيير الحالة؟',async()=>{closeModal('confirmModal');$('bookingAdminStatus').value=status;await persistBookingAdminChanges(status)},tone);
   }
 
   async function persistBookingAdminChanges(forcedStatus=null){
@@ -1923,7 +1929,7 @@
       if(['scheduled','completed'].includes(status)){
         if(scheduleTaskId){const {error}=await state.client.from('work_schedule_tasks').update(taskPayload).eq('id',scheduleTaskId);if(error)throw error}
         else{const {data,error}=await state.client.from('work_schedule_tasks').insert(taskPayload).select('id').single();if(error)throw error;scheduleTaskId=data.id}
-      }else if(['pending','rejected','cancelled'].includes(status)&&scheduleTaskId){
+      }else if(['pending','accepted','rejected','cancelled'].includes(status)&&scheduleTaskId){
         const {error}=await state.client.from('work_schedule_tasks').delete().eq('id',scheduleTaskId);if(error)throw error;scheduleTaskId=null;
       }
       const payload={status,scheduled_date:status==='scheduled'||status==='completed'?(date||row.scheduled_date||row.preferred_date):null,scheduled_time:status==='scheduled'||status==='completed'?`${String(time||row.scheduled_time||row.preferred_time).slice(0,5)}:00`:null,admin_notes:$('bookingAdminNotes').value.trim()||null,schedule_task_id:scheduleTaskId,updated_at:new Date().toISOString()};
@@ -1946,6 +1952,7 @@
   function todayISO(){const d=new Date();const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return `${y}-${m}-${day}`}
   function currentTime(){const d=new Date();return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`}
   function dateFromISO(iso){const [y,m,d]=String(iso||'').split('-').map(Number);return y&&m&&d?new Date(y,m-1,d,12,0,0):new Date()}
+  function weekdayNameFromISO(iso){try{return new Intl.DateTimeFormat('ar-SA',{weekday:'long'}).format(dateFromISO(iso))}catch{return ''}}
   function formatDate(iso){const [y,m,d]=String(iso||'').split('-');return y&&m&&d?`${d}/${m}/${y}`:String(iso||'')}
   function formatDateTime(value){try{return new Intl.DateTimeFormat('ar-SA',{dateStyle:'medium',timeStyle:'short'}).format(new Date(value))}catch{return String(value||'')}}
   function getHijriFromISO(iso){try{return new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura',{day:'numeric',month:'long',year:'numeric'}).format(dateFromISO(iso))}catch{return ''}}
