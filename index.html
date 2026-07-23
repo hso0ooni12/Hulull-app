@@ -470,6 +470,8 @@
                 <form id="incomingForm">
                   <div class="form-grid">
                     <div class="field span-2"><label for="incomingParty">استلمنا من السيد / السيدة / الجهة *</label><input id="incomingParty" class="input" required maxlength="200" placeholder="اسم الدافع"></div>
+                    <div class="field"><label for="incomingPhone">رقم الجوال</label><input id="incomingPhone" class="input" type="tel" inputmode="tel" maxlength="30" placeholder="رقم جوال الزبون" dir="ltr"></div>
+                    <div class="field"><label for="incomingLocation">الموقع</label><input id="incomingLocation" class="input" maxlength="500" placeholder="موقع الزبون"></div>
                     <div class="field"><label for="incomingPayment">طريقة الدفع *</label><select id="incomingPayment" class="select" required><option value="">-- اختر --</option><option value="cash">نقدي</option><option value="transfer">تحويل بنكي</option><option value="mada">شبكة / مدى</option><option value="cheque">شيك</option><option value="other">أخرى</option></select></div>
                     <div class="field"><label for="incomingAmount">المبلغ (ر.س) *</label><input id="incomingAmount" class="input" type="number" min="0.01" step="0.01" required placeholder="0.00" dir="ltr"></div>
                     <div class="field"><label for="incomingDate">التاريخ الميلادي *</label><input id="incomingDate" class="input" type="date" required></div>
@@ -484,8 +486,8 @@
             </section>
             <section class="card">
               <div class="card-header"><h3 class="card-title"><i class="fa-solid fa-list"></i> سجل سندات القبض <span id="incomingCountBadge" class="badge">0</span></h3><div class="money" id="incomingListTotal">0.00 ر.س</div></div>
-              <div class="card-body" style="padding-bottom:10px"><div class="filters"><div class="filter-field search-filter"><label>بحث</label><input id="incomingSearch" class="input" placeholder="رقم السند، الدافع، الوصف..."></div><div class="filter-field"><label>من تاريخ</label><input id="incomingFrom" class="input" type="date"></div><div class="filter-field"><label>إلى تاريخ</label><input id="incomingTo" class="input" type="date"></div><button id="incomingClearFilters" class="btn btn-soft" type="button"><i class="fa-solid fa-filter-circle-xmark"></i></button></div></div>
-              <div class="table-wrap entry-table-wrap"><table><thead><tr><th>#</th><th>رقم السند</th><th>التاريخ</th><th>الدافع</th><th>المبلغ</th><th>الدفع</th><th>إجراءات</th></tr></thead><tbody id="incomingTableBody"></tbody></table><div id="incomingEmpty" class="empty hidden"><i class="fa-solid fa-inbox"></i><b>لا توجد نتائج</b><span>أضف سندًا جديدًا أو غيّر عوامل البحث.</span></div></div>
+              <div class="card-body" style="padding-bottom:10px"><div class="filters"><div class="filter-field search-filter"><label>بحث</label><input id="incomingSearch" class="input" placeholder="رقم السند، الدافع، رقم الجوال، الوصف..."></div><div class="filter-field"><label>من تاريخ</label><input id="incomingFrom" class="input" type="date"></div><div class="filter-field"><label>إلى تاريخ</label><input id="incomingTo" class="input" type="date"></div><button id="incomingClearFilters" class="btn btn-soft" type="button"><i class="fa-solid fa-filter-circle-xmark"></i></button></div></div>
+              <div class="table-wrap entry-table-wrap"><table><thead><tr><th>#</th><th>رقم السند</th><th>التاريخ</th><th>الدافع</th><th>رقم الجوال</th><th>الموقع</th><th>المبلغ</th><th>الدفع</th><th>إجراءات</th></tr></thead><tbody id="incomingTableBody"></tbody></table><div id="incomingEmpty" class="empty hidden"><i class="fa-solid fa-inbox"></i><b>لا توجد نتائج</b><span>أضف سندًا جديدًا أو غيّر عوامل البحث.</span></div></div>
               <div id="incomingMobileList" class="mobile-record-list"></div>
               <div class="table-footer"><span id="incomingShown">عرض 0 من 0</span><button id="deleteAllIncoming" class="btn btn-danger" type="button"><i class="fa-solid fa-trash-can"></i> حذف كل الوارد</button></div>
             </section>
@@ -946,7 +948,13 @@
     return state.entries.filter(e=>e.entry_type===type).filter(e=>{
       if(from&&e.entry_date<from)return false;if(to&&e.entry_date>to)return false;
       if(!search)return true;
-      const hay=[e.voucher_number,e.party_name,e.reason,e.notes,getPaymentAr(e.payment_method)].join(' ').toLowerCase();return hay.includes(search);
+      const hay=[e.voucher_number,e.party_name,e.reason,e.notes,getPaymentAr(e.payment_method)].join(' ').toLowerCase();
+      if(hay.includes(search))return true;
+      if(type==='incoming'){
+        const phoneSearch=normalizePhoneDigits(search),phoneValue=normalizePhoneDigits(e.customer_phone);
+        return !!phoneSearch && phoneValue.includes(phoneSearch);
+      }
+      return false;
     }).sort(compareEntriesDesc);
   }
 
@@ -978,6 +986,11 @@
       const date=document.createElement('span');date.innerHTML='<i class="fa-regular fa-calendar"></i> ';date.append(document.createTextNode(formatDate(entry.entry_date)));
       const pay=document.createElement('span');pay.innerHTML='<i class="fa-regular fa-credit-card"></i> ';pay.append(document.createTextNode(getPaymentAr(entry.payment_method)));
       meta.append(date,pay);
+      if(type==='incoming'){
+        const phone=document.createElement('span');phone.innerHTML='<i class="fa-solid fa-mobile-screen-button"></i> ';phone.append(document.createTextNode(entry.customer_phone||'—'));
+        const location=document.createElement('span');location.innerHTML='<i class="fa-solid fa-location-dot"></i> ';location.append(document.createTextNode(entry.customer_location||'—'));
+        meta.append(phone,location);
+      }
       const reason=document.createElement('div');reason.className='mobile-record-reason';reason.textContent=entry.reason||'—';
       const actions=document.createElement('div');actions.className='mobile-record-actions';
       actions.append(mobileActionButton('fa-pen','تعديل',()=>editEntry(entry.id)));
@@ -996,7 +1009,9 @@
   function buildEntryRow(entry,index){
     const tr=document.createElement('tr');tr.append(tdText(index));tr.append(tdText(entry.voucher_number,'voucher-no'));
     const dateTd=document.createElement('td');dateTd.append(document.createTextNode(formatDate(entry.entry_date)));const small=document.createElement('small');small.style.cssText='display:block;color:#64748b;margin-top:2px';small.textContent=entry.date_hijri||'';dateTd.append(small);tr.append(dateTd);
-    tr.append(tdText(entry.party_name));tr.append(tdText(formatMoney(entry.amount),'money'));tr.append(tdBadge(getPaymentAr(entry.payment_method)));
+    tr.append(tdText(entry.party_name));
+    if(entry.entry_type==='incoming'){tr.append(tdText(entry.customer_phone||'—'));tr.append(tdText(entry.customer_location||'—'))}
+    tr.append(tdText(formatMoney(entry.amount),'money'));tr.append(tdBadge(getPaymentAr(entry.payment_method)));
     const actTd=document.createElement('td');const box=document.createElement('div');box.className='row-actions';
     box.append(actionButton('fa-pen','تعديل',()=>editEntry(entry.id)));
     box.append(actionButton('fa-print','طباعة',()=>printEntry(entry.id)));
@@ -1037,7 +1052,11 @@
       amount:Number($(type+'Amount').value),
       amount_text:$(type+'AmountText').value,
       reason:$(type+'Reason').value.trim(),
-      notes:$(type+'Notes').value.trim()||null
+      notes:$(type+'Notes').value.trim()||null,
+      ...(type==='incoming'?{
+        customer_phone:$('incomingPhone').value.trim()||null,
+        customer_location:$('incomingLocation').value.trim()||null
+      }:{})
     };
   }
 
@@ -1045,7 +1064,9 @@
     const e=state.entries.find(x=>x.id===id);if(!e)return;const type=e.entry_type;navigate(type);
     if(type==='incoming')state.editIncomingId=id;else state.editOutgoingId=id;
     $(type+'FormTitle').innerHTML='';const icon=document.createElement('i');icon.className='fa-solid fa-pen-to-square';$(type+'FormTitle').append(icon,document.createTextNode(' تعديل السند'));
-    $(type+'PreviewNo').textContent=e.voucher_number;$(type+'Party').value=e.party_name||'';$(type+'Payment').value=e.payment_method||'';$(type+'Amount').value=e.amount||'';$(type+'Date').value=e.entry_date||todayISO();$(type+'Time').value=(e.entry_time||'').slice(0,5)||currentTime();$(type+'Reason').value=e.reason||'';$(type+'Notes').value=e.notes||'';syncAmountText(type);syncPreview(type);scrollToForm();showToast('وضع التعديل',`أنت تعدل السند ${e.voucher_number}`)
+    $(type+'PreviewNo').textContent=e.voucher_number;$(type+'Party').value=e.party_name||'';$(type+'Payment').value=e.payment_method||'';$(type+'Amount').value=e.amount||'';$(type+'Date').value=e.entry_date||todayISO();$(type+'Time').value=(e.entry_time||'').slice(0,5)||currentTime();$(type+'Reason').value=e.reason||'';$(type+'Notes').value=e.notes||'';
+    if(type==='incoming'){$('incomingPhone').value=e.customer_phone||'';$('incomingLocation').value=e.customer_location||''}
+    syncAmountText(type);syncPreview(type);scrollToForm();showToast('وضع التعديل',`أنت تعدل السند ${e.voucher_number}`)
   }
 
   function resetEntryForm(type){
@@ -1349,7 +1370,7 @@
 
   function sanitizeImportedEntry(r){
     if(!r||!['incoming','outgoing'].includes(r.entry_type)||!String(r.party_name||'').trim()||!(Number(r.amount)>0)||!String(r.reason||'').trim())return null;
-    return {entry_type:r.entry_type,voucher_number:r.voucher_number||null,entry_date:r.entry_date||todayISO(),date_hijri:r.date_hijri||getHijriFromISO(r.entry_date||todayISO()),entry_time:normalizeTime(r.entry_time),party_name:String(r.party_name).trim(),company_name:r.company_name||COMPANY.nameAr,payment_method:normalizePayment(r.payment_method),amount:Number(r.amount),amount_text:r.amount_text||numberToArabicWords(Number(r.amount))+' ريال فقط لا غير',reason:String(r.reason).trim(),notes:r.notes||null};
+    return {entry_type:r.entry_type,voucher_number:r.voucher_number||null,entry_date:r.entry_date||todayISO(),date_hijri:r.date_hijri||getHijriFromISO(r.entry_date||todayISO()),entry_time:normalizeTime(r.entry_time),party_name:String(r.party_name).trim(),company_name:r.company_name||COMPANY.nameAr,payment_method:normalizePayment(r.payment_method),amount:Number(r.amount),amount_text:r.amount_text||numberToArabicWords(Number(r.amount))+' ريال فقط لا غير',reason:String(r.reason).trim(),notes:r.notes||null,...(r.entry_type==='incoming'?{customer_phone:String(r.customer_phone||'').trim()||null,customer_location:String(r.customer_location||'').trim()||null}:{})};
   }
 
   function normalizePayment(v){return ['cash','cheque','transfer','mada','other'].includes(v)?v:'other'}
@@ -1510,6 +1531,7 @@
   function compareEntriesDesc(a,b){return String(b.entry_date||'').localeCompare(String(a.entry_date||''))||String(b.created_at||'').localeCompare(String(a.created_at||''))}
   function formatMoney(value){return `${Number(value||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})} ر.س`}
   function getPaymentAr(m){return {cash:'نقدي',cheque:'شيك',transfer:'تحويل بنكي',mada:'شبكة / مدى',other:'أخرى'}[m]||m||''}
+  function normalizePhoneDigits(value){return String(value||'').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/\D/g,'')}
   function escapeHTML(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
 
   function numberToArabicWords(num){
@@ -1547,7 +1569,7 @@
     return m||'حدث خطأ غير متوقع أثناء مزامنة جدول العمل';
   }
 
-  function friendlyDbError(error){const m=String(error?.message||'');if(/duplicate key|unique constraint/i.test(m))return 'رقم السند موجود مسبقاً. أعد المحاولة';if(/row-level security/i.test(m))return 'حسابك لا يملك الصلاحية المطلوبة لهذه العملية';if(/Failed to fetch|NetworkError/i.test(m))return 'تعذر الوصول إلى الخادم. تحقق من الإنترنت';return m||'حدث خطأ غير متوقع'}
+  function friendlyDbError(error){const m=String(error?.message||'');if(/customer_phone|customer_location/i.test(m))return 'قاعدة سندات القبض تحتاج تحديث حقول الجوال والموقع. شغّل ملف supabase_receipt_contact_setup.sql مرة واحدة في Supabase';if(/duplicate key|unique constraint/i.test(m))return 'رقم السند موجود مسبقاً. أعد المحاولة';if(/row-level security/i.test(m))return 'حسابك لا يملك الصلاحية المطلوبة لهذه العملية';if(/Failed to fetch|NetworkError/i.test(m))return 'تعذر الوصول إلى الخادم. تحقق من الإنترنت';return m||'حدث خطأ غير متوقع'}
   </script>
 </body>
 </html>
