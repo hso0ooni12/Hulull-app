@@ -398,6 +398,8 @@
     .booking-info-item a:hover{color:var(--primary)}
     .booking-card-actions{display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:12px}
     .booking-card-actions .btn{min-height:36px;padding:8px 11px;font-size:.67rem}
+    .booking-card-actions .booking-delete-btn{color:var(--danger);border-color:#fecdd3;background:#fff}
+    .booking-card-actions .booking-delete-btn:hover{background:var(--danger-soft)}
     #bookingAdminModal .modal{max-height:calc(100dvh - 28px);display:flex;flex-direction:column}
     #bookingAdminModal form{min-height:0;overflow:auto}
     .booking-modal-layout{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}
@@ -720,8 +722,8 @@
             <div class="field full"><label for="taskTitle">اسم المهمة *</label><input id="taskTitle" class="input" required maxlength="120" placeholder="مثال: معاينة موقع العميل"></div>
             <div class="field"><label for="taskDate">اليوم والتاريخ *</label><input id="taskDate" class="input" type="date" required></div>
             <div class="field"><label for="taskTime">وقت المهمة *</label><input id="taskTime" class="input" type="time" required></div>
-            <div class="field full"><label for="taskLocation">موقع المهمة *</label><input id="taskLocation" class="input" required maxlength="160" placeholder="اكتب موقع المهمة يدويًا، مثال: حي الياسمين - فيلا 12"></div>
-            <div class="field full"><label for="taskNotes">ملاحظات</label><textarea id="taskNotes" class="textarea" maxlength="500" placeholder="تفاصيل إضافية عن المهمة..."></textarea></div>
+            <div class="field full"><label for="taskLocation">موقع المهمة *</label><input id="taskLocation" class="input" required maxlength="350" placeholder="اكتب موقع المهمة يدويًا، مثال: حي الياسمين - فيلا 12"></div>
+            <div class="field full"><label for="taskNotes">ملاحظات</label><textarea id="taskNotes" class="textarea" maxlength="2000" placeholder="تفاصيل إضافية عن المهمة..."></textarea></div>
           </div>
         </div>
         <div class="modal-actions task-modal-actions">
@@ -759,7 +761,7 @@
             <div class="field span-2"><label for="bookingAdminNotes">ملاحظات الإدارة</label><textarea id="bookingAdminNotes" class="textarea" maxlength="1500" placeholder="ملاحظات التواصل أو التسعير أو سبب الرفض والإلغاء"></textarea></div>
           </div>
         </div>
-        <div class="modal-actions"><div class="left-actions"><button id="bookingRejectBtn" class="btn btn-danger" type="button"><i class="fa-solid fa-ban"></i> رفض الطلب</button><button id="bookingAcceptBtn" class="btn btn-success" type="button"><i class="fa-solid fa-circle-check"></i> قبول الطلب</button></div><button class="btn btn-soft" type="button" data-close-modal="bookingAdminModal">إغلاق</button><button id="bookingAdminSaveBtn" class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> حفظ التغييرات</button></div>
+        <div class="modal-actions"><div class="left-actions"><button id="bookingDeleteBtn" class="btn btn-outline" style="color:var(--danger);border-color:#fecdd3" type="button"><i class="fa-solid fa-trash"></i> حذف الطلب</button><button id="bookingRejectBtn" class="btn btn-danger" type="button"><i class="fa-solid fa-ban"></i> رفض الطلب</button><button id="bookingAcceptBtn" class="btn btn-success" type="button"><i class="fa-solid fa-circle-check"></i> قبول الطلب</button></div><button class="btn btn-soft" type="button" data-close-modal="bookingAdminModal">إغلاق</button><button id="bookingAdminSaveBtn" class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> حفظ التغييرات</button></div>
       </form>
     </div>
   </div>
@@ -895,6 +897,7 @@
     $('bookingAdminForm').addEventListener('submit',saveBookingAdminChanges);
     $('bookingRejectBtn').addEventListener('click',()=>quickBookingStatus('rejected'));
     $('bookingAcceptBtn').addEventListener('click',()=>quickBookingStatus('accepted'));
+    $('bookingDeleteBtn').addEventListener('click',()=>requestDeleteBooking(state.selectedBookingId));
 
     $('addTaskBtn').addEventListener('click', ()=>openTaskModal());
     $('taskForm').addEventListener('submit', saveScheduleTask);
@@ -1886,10 +1889,17 @@
     const info=document.createElement('div');info.className='booking-card-info';
     info.append(bookingInfoItem('رقم الجوال',row.customer_phone,bookingWhatsAppUrl(row),'_blank'),bookingInfoItem('الموعد المفضل',preferredBookingText(row)),bookingInfoItem('الموقع',row.location_label||`${row.location_lat}, ${row.location_lng}`,bookingMapUrl(row),'_blank'),bookingInfoItem('تاريخ الإرسال',formatDateTime(row.created_at)));
     const actions=document.createElement('div');actions.className='booking-card-actions';
+    if(!['accepted','scheduled','completed'].includes(row.status)){
+      const accept=document.createElement('button');accept.type='button';accept.className='btn btn-success';accept.innerHTML='<i class="fa-solid fa-circle-check"></i> قبول';accept.addEventListener('click',()=>requestBookingCardStatus(row.id,'accepted',accept));actions.append(accept);
+    }
+    if(!['rejected','cancelled','completed'].includes(row.status)){
+      const reject=document.createElement('button');reject.type='button';reject.className='btn btn-danger';reject.innerHTML='<i class="fa-solid fa-ban"></i> رفض';reject.addEventListener('click',()=>requestBookingCardStatus(row.id,'rejected',reject));actions.append(reject);
+    }
     const details=document.createElement('button');details.type='button';details.className='btn btn-outline';details.innerHTML='<i class="fa-solid fa-eye"></i> التفاصيل';details.addEventListener('click',()=>openBookingAdminModal(row.id));
     const schedule=document.createElement('button');schedule.type='button';schedule.className='btn btn-primary';schedule.innerHTML='<i class="fa-solid fa-calendar-plus"></i> جدولة';schedule.addEventListener('click',()=>openBookingAdminModal(row.id,true));
     const wa=document.createElement('a');wa.className='btn btn-soft';wa.href=bookingWhatsAppUrl(row);wa.target='_blank';wa.rel='noopener';wa.innerHTML='<i class="fa-brands fa-whatsapp"></i> واتساب';
-    actions.append(details,schedule,wa);card.append(head,info,actions);return card;
+    const remove=document.createElement('button');remove.type='button';remove.className='btn btn-outline booking-delete-btn';remove.innerHTML='<i class="fa-solid fa-trash"></i> حذف';remove.addEventListener('click',()=>requestDeleteBooking(row.id,remove));
+    actions.append(details,schedule,wa,remove);card.append(head,info,actions);return card;
   }
 
   function bookingInfoItem(label,value,href=null,target=null){
@@ -1913,30 +1923,170 @@
   async function saveBookingAdminChanges(event){event.preventDefault();await persistBookingAdminChanges()}
 
   function quickBookingStatus(status){
-    const labels={accepted:'قبول هذا الطلب؟',rejected:'رفض هذا الطلب؟',cancelled:'إلغاء هذا الموعد؟'};
+    const labels={accepted:'قبول هذا الطلب وإضافته إلى جدول العمال؟',rejected:'رفض هذا الطلب؟',cancelled:'إلغاء هذا الموعد؟'};
     const tone=status==='accepted'?'success':'danger';
-    openConfirm('تأكيد الإجراء',labels[status]||'تأكيد تغيير الحالة؟',async()=>{closeModal('confirmModal');$('bookingAdminStatus').value=status;await persistBookingAdminChanges(status)},tone);
+    openConfirm('تأكيد الإجراء',labels[status]||'تأكيد تغيير الحالة؟',async()=>{
+      closeModal('confirmModal');
+      $('bookingAdminStatus').value=status;
+      await persistBookingAdminChanges(status);
+    },tone);
   }
 
-  async function persistBookingAdminChanges(forcedStatus=null){
-    const row=state.bookings.find(x=>x.id===state.selectedBookingId);if(!row)return;
-    const status=forcedStatus||$('bookingAdminStatus').value,date=$('bookingScheduledDate').value,time=$('bookingScheduledTime').value;
-    if(status==='scheduled'&&(!date||!time)){showToast('بيانات الموعد ناقصة','حدد تاريخ ووقت الموعد المعتمد','error');return}
-    setButtonBusy($('bookingAdminSaveBtn'),true,'جاري الحفظ...');setSync('busy','جاري تحديث طلب العميل');
+  function requestBookingCardStatus(id,status,actionButton=null){
+    const row=state.bookings.find(x=>x.id===id);if(!row)return;
+    const isAccept=status==='accepted';
+    const title=isAccept?'قبول الطلب':'رفض الطلب';
+    const message=isAccept
+      ?`سيتم قبول طلب ${row.customer_name} وإضافته تلقائياً إلى جدول العمال بتاريخ ${preferredBookingText(row)}. هل تريد المتابعة؟`
+      :`سيبقى طلب ${row.customer_name} محفوظاً في السجل بحالة مرفوض. هل تريد المتابعة؟`;
+    openConfirm(title,message,async()=>{
+      closeModal('confirmModal');
+      await persistBookingAdminChanges(status,{bookingId:id,actionButton,fromCard:true});
+    },isAccept?'success':'danger');
+  }
+
+  function buildBookingTaskPayload(row,date,time,status){
+    const cleanTime=String(time||row.preferred_time||'').slice(0,5);
+    const locationText=[row.location_label,`${row.location_lat}, ${row.location_lng}`].filter(Boolean).join(' — ');
+    const detailLines=[
+      `رقم الطلب: ${bookingReference(row.id)}`,
+      `العميل: ${row.customer_name}`,
+      `الجوال: ${row.customer_phone}`,
+      `الموعد المفضل: ${preferredBookingText(row)}`,
+      row.location_label?`وصف الموقع: ${row.location_label}`:'',
+      `الإحداثيات: ${row.location_lat}, ${row.location_lng}`,
+      `رابط الموقع: ${bookingMapUrl(row)}`,
+      row.customer_notes?`طلب العميل: ${row.customer_notes}`:'لا توجد ملاحظات إضافية من العميل'
+    ].filter(Boolean);
+    return {
+      title:`معاينة موقع — ${row.customer_name} — ${bookingReference(row.id)}`,
+      task_date:date||row.preferred_date,
+      task_time:`${cleanTime}:00`,
+      task_location:locationText,
+      notes:detailLines.join('\n'),
+      is_completed:status==='completed'
+    };
+  }
+
+  async function persistBookingAdminChanges(forcedStatus=null,options={}){
+    const bookingId=options.bookingId||state.selectedBookingId;
+    const row=state.bookings.find(x=>x.id===bookingId);if(!row)return;
+    const fromCard=!!options.fromCard;
+    const status=forcedStatus||(fromCard?row.status:$('bookingAdminStatus').value);
+    const date=fromCard?(row.scheduled_date||row.preferred_date):$('bookingScheduledDate').value;
+    const time=fromCard?(String(row.scheduled_time||row.preferred_time||'').slice(0,5)):$('bookingScheduledTime').value;
+    const adminNotes=fromCard?(row.admin_notes||null):($('bookingAdminNotes').value.trim()||null);
+    if(['accepted','scheduled'].includes(status)&&(!date||!time)){showToast('بيانات الموعد ناقصة','حدد تاريخ ووقت الموعد المعتمد','error');return}
+    const actionButton=options.actionButton||(!fromCard?$('bookingAdminSaveBtn'):null);
+    if(actionButton)setButtonBusy(actionButton,true,'جاري التنفيذ...');
+    setSync('busy','جاري تحديث طلب العميل');
     try{
-      let scheduleTaskId=row.schedule_task_id||null;
-      const taskPayload={title:`تمتير موقع — ${row.customer_name}`,task_date:date||row.preferred_date,task_time:`${String(time||row.preferred_time).slice(0,5)}:00`,task_location:`${row.location_label?row.location_label+' — ':''}${row.location_lat}, ${row.location_lng}`,notes:`طلب عميل ${bookingReference(row.id)} — جوال ${row.customer_phone}${row.customer_notes?' — '+row.customer_notes:''}`,is_completed:status==='completed'};
-      if(['scheduled','completed'].includes(status)){
-        if(scheduleTaskId){const {error}=await state.client.from('work_schedule_tasks').update(taskPayload).eq('id',scheduleTaskId);if(error)throw error}
-        else{const {data,error}=await state.client.from('work_schedule_tasks').insert(taskPayload).select('id').single();if(error)throw error;scheduleTaskId=data.id}
-      }else if(['pending','accepted','rejected','cancelled'].includes(status)&&scheduleTaskId){
+      const createsScheduleTask=['accepted','scheduled','completed'].includes(status);
+      const storesAppointment=createsScheduleTask;
+      const appointmentDate=storesAppointment?(date||row.scheduled_date||row.preferred_date):null;
+      const appointmentTime=storesAppointment?`${String(time||row.scheduled_time||row.preferred_time).slice(0,5)}:00`:null;
+      const taskPayload=buildBookingTaskPayload(row,appointmentDate||row.preferred_date,appointmentTime||row.preferred_time,status);
+      let scheduleTaskId=null;
+      const {data:rpcTaskId,error:rpcError}=await state.client.rpc('admin_update_customer_booking',{
+        p_booking_id:row.id,
+        p_status:status,
+        p_scheduled_date:appointmentDate,
+        p_scheduled_time:appointmentTime,
+        p_admin_notes:adminNotes,
+        p_task_title:taskPayload.title,
+        p_task_location:taskPayload.task_location,
+        p_task_notes:taskPayload.notes,
+        p_is_completed:taskPayload.is_completed
+      });
+      if(!rpcError){
+        scheduleTaskId=rpcTaskId||null;
+      }else if(isMissingBookingRpcError(rpcError,'admin_update_customer_booking')){
+        scheduleTaskId=await persistBookingTransitionFallback(row,{status,appointmentDate,appointmentTime,adminNotes,taskPayload,createsScheduleTask});
+      }else{
+        throw rpcError;
+      }
+      if(!fromCard)closeModal('bookingAdminModal');
+      await synchronizeNow('booking-update');
+      showToast(status==='accepted'?'تم قبول الطلب':'تم تحديث الطلب',status==='accepted'?'أضيف الطلب إلى جدول العمال كمهمة جديدة':`أصبحت الحالة: ${bookingStatusLabel(status)}`);
+      navigate('bookings');
+    }catch(error){
+      console.error(error);setSync('error','فشل تحديث الطلب');showToast('تعذر تحديث الطلب',friendlyBookingDbError(error),'error');
+    }finally{
+      if(actionButton)setButtonBusy(actionButton,false);
+    }
+  }
+
+  function isMissingBookingRpcError(error,functionName){
+    const message=String(error?.message||'');
+    return error?.code==='PGRST202'||new RegExp(`Could not find the function.*${functionName}|function .*${functionName}.*does not exist`,'i').test(message);
+  }
+
+  async function persistBookingTransitionFallback(row,{status,appointmentDate,appointmentTime,adminNotes,taskPayload,createsScheduleTask}){
+    let scheduleTaskId=row.schedule_task_id||null;
+    let newlyCreatedTaskId=null;
+    try{
+      if(createsScheduleTask){
+        if(scheduleTaskId){
+          const {error}=await state.client.from('work_schedule_tasks').update(taskPayload).eq('id',scheduleTaskId);if(error)throw error;
+        }else{
+          const {data,error}=await state.client.from('work_schedule_tasks').insert(taskPayload).select('id').single();if(error)throw error;
+          scheduleTaskId=data.id;newlyCreatedTaskId=data.id;
+        }
+      }else if(scheduleTaskId){
         const {error}=await state.client.from('work_schedule_tasks').delete().eq('id',scheduleTaskId);if(error)throw error;scheduleTaskId=null;
       }
-      const payload={status,scheduled_date:status==='scheduled'||status==='completed'?(date||row.scheduled_date||row.preferred_date):null,scheduled_time:status==='scheduled'||status==='completed'?`${String(time||row.scheduled_time||row.preferred_time).slice(0,5)}:00`:null,admin_notes:$('bookingAdminNotes').value.trim()||null,schedule_task_id:scheduleTaskId,updated_at:new Date().toISOString()};
-      const {error}=await state.client.from('customer_booking_requests').update(payload).eq('id',row.id);if(error)throw error;
-      closeModal('bookingAdminModal');await synchronizeNow('booking-update');showToast('تم تحديث الطلب',`أصبحت الحالة: ${bookingStatusLabel(status)}`);navigate('bookings');
-    }catch(error){console.error(error);setSync('error','فشل تحديث الطلب');showToast('تعذر تحديث الطلب',friendlyBookingDbError(error),'error')}
-    finally{setButtonBusy($('bookingAdminSaveBtn'),false)}
+      const {error}=await state.client.from('customer_booking_requests').update({
+        status,
+        scheduled_date:appointmentDate,
+        scheduled_time:appointmentTime,
+        admin_notes:adminNotes,
+        schedule_task_id:scheduleTaskId,
+        updated_at:new Date().toISOString()
+      }).eq('id',row.id);
+      if(error)throw error;
+      return scheduleTaskId;
+    }catch(error){
+      if(newlyCreatedTaskId){
+        try{await state.client.from('work_schedule_tasks').delete().eq('id',newlyCreatedTaskId)}catch(cleanupError){console.warn('Schedule rollback error:',cleanupError)}
+      }
+      throw error;
+    }
+  }
+
+  function requestDeleteBooking(id,actionButton=null){
+    const row=state.bookings.find(x=>x.id===id);if(!row)return;
+    openConfirm('حذف الطلب نهائياً',`سيتم حذف طلب ${row.customer_name} وصورة الواجهة، كما ستُحذف المهمة المرتبطة به من جدول العمال إن وجدت. لا يمكن التراجع عن هذا الإجراء.`,async()=>{
+      closeModal('confirmModal');
+      await deleteBookingRequest(row,actionButton);
+    },'danger');
+  }
+
+  async function deleteBookingRequest(row,actionButton=null){
+    if(!row)return;
+    if(actionButton)setButtonBusy(actionButton,true,'جاري الحذف...');
+    setSync('busy','جاري حذف طلب العميل');
+    try{
+      const {data:deletedImagePath,error:rpcError}=await state.client.rpc('admin_delete_customer_booking',{p_booking_id:row.id});
+      if(rpcError){
+        if(!isMissingBookingRpcError(rpcError,'admin_delete_customer_booking'))throw rpcError;
+        if(row.schedule_task_id){
+          const {error}=await state.client.from('work_schedule_tasks').delete().eq('id',row.schedule_task_id);if(error)throw error;
+        }
+        const {error}=await state.client.from('customer_booking_requests').delete().eq('id',row.id);if(error)throw error;
+      }
+      const imagePath=deletedImagePath||row.facade_image_path;
+      if(imagePath){
+        const {error:storageError}=await state.client.storage.from('booking-facades').remove([imagePath]);
+        if(storageError)console.warn('Booking image cleanup error:',storageError);
+      }
+      state.selectedBookingId=null;closeModal('bookingAdminModal');
+      await synchronizeNow('booking-delete');
+      showToast('تم حذف الطلب',`حُذف الطلب ${bookingReference(row.id)} نهائياً`);navigate('bookings');
+    }catch(error){
+      console.error(error);setSync('error','فشل حذف الطلب');showToast('تعذر حذف الطلب',friendlyBookingDbError(error),'error');
+    }finally{
+      if(actionButton)setButtonBusy(actionButton,false);
+    }
   }
 
   function friendlyBookingDbError(error){
