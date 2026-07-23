@@ -17,6 +17,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@400;500;600;700;800&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <style>
     :root{
       --ink:#0f172a;--ink-2:#1e293b;--primary:#145b91;--primary-2:#1f7ab8;--primary-soft:#eaf4fb;
@@ -346,9 +347,123 @@
       .mobile-record-meta{grid-template-columns:1fr}
     }
 
+
+    /* Customer booking portal */
+    .booking-public-shell{min-height:100vh;background:linear-gradient(145deg,#eef6fb,#f8fafc);padding:24px}
+    .booking-public-wrap{width:min(100%,1040px);margin:0 auto}
+    .booking-public-header{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:20px}
+    .booking-public-brand{display:flex;align-items:center;gap:13px}
+    .booking-public-brand img{width:68px;height:68px;object-fit:contain;background:#fff;border:1px solid var(--line);border-radius:18px;padding:6px;box-shadow:0 10px 26px rgba(15,23,42,.08)}
+    .booking-public-brand h1{font:800 1.05rem 'Noto Kufi Arabic',sans-serif;margin-bottom:4px}
+    .booking-public-brand p{font:500 .7rem 'Noto Kufi Arabic',sans-serif;color:var(--muted)}
+    .booking-public-card{background:#fff;border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);overflow:hidden}
+    .booking-public-intro{padding:24px 26px;background:linear-gradient(135deg,#0f172a,#145b91);color:#fff;display:flex;justify-content:space-between;gap:20px;align-items:center}
+    .booking-public-intro h2{font:800 1.15rem 'Noto Kufi Arabic',sans-serif;margin-bottom:8px}
+    .booking-public-intro p{font:500 .76rem 'Noto Kufi Arabic',sans-serif;color:#dbeafe;line-height:1.9;max-width:700px}
+    .booking-public-intro i{font-size:2.2rem;color:#bfdbfe}
+    .booking-public-body{padding:24px 26px}
+    .booking-map{height:340px;border:1px solid var(--line-2);border-radius:14px;overflow:hidden;background:#e2e8f0;z-index:1}
+    .location-tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:9px}
+    .location-selection{font:600 .68rem 'Noto Kufi Arabic',sans-serif;color:var(--muted);word-break:break-word}
+    .upload-drop{border:1.5px dashed var(--line-2);border-radius:14px;padding:18px;text-align:center;background:#f8fafc;position:relative}
+    .upload-drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+    .upload-drop i{font-size:1.55rem;color:var(--primary);margin-bottom:8px}
+    .upload-drop b{display:block;font:700 .76rem 'Noto Kufi Arabic',sans-serif;margin-bottom:4px}
+    .upload-drop span{color:var(--muted);font-size:.74rem}
+    .facade-preview{display:none;width:100%;max-height:280px;object-fit:cover;border-radius:12px;margin-top:12px;border:1px solid var(--line)}
+    .booking-success{padding:40px 24px;text-align:center}
+    .booking-success i{font-size:3.2rem;color:var(--success);margin-bottom:14px}
+    .booking-success h2{font:800 1.1rem 'Noto Kufi Arabic',sans-serif;margin-bottom:9px}
+    .booking-success p{color:var(--muted);line-height:1.9}
+    .booking-reference{display:inline-flex;margin:16px 0;padding:10px 15px;border-radius:10px;background:#f1f5f9;font:800 .85rem 'Noto Kufi Arabic',sans-serif;direction:ltr}
+
+    /* Admin bookings */
+    .booking-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+    .booking-stat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;align-items:center;gap:12px}
+    .booking-stat i{width:40px;height:40px;display:grid;place-items:center;border-radius:11px;background:var(--primary-soft);color:var(--primary)}
+    .booking-stat b{display:block;font:800 1.1rem 'Noto Kufi Arabic',sans-serif}
+    .booking-stat span{color:var(--muted);font:600 .64rem 'Noto Kufi Arabic',sans-serif}
+    .booking-admin-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+    .booking-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:17px;box-shadow:0 8px 22px rgba(15,23,42,.04)}
+    .booking-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:13px}
+    .booking-card h3{font:800 .82rem 'Noto Kufi Arabic',sans-serif;margin-bottom:4px}
+    .booking-card-ref{font:600 .62rem 'Noto Kufi Arabic',sans-serif;color:var(--muted);direction:ltr;text-align:right}
+    .booking-status{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 10px;font:700 .61rem 'Noto Kufi Arabic',sans-serif;white-space:nowrap}
+    .booking-status.pending{background:#fff7ed;color:#9a3412}.booking-status.scheduled{background:#eff6ff;color:#1d4ed8}.booking-status.completed{background:#ecfdf3;color:#15803d}.booking-status.rejected,.booking-status.cancelled{background:#fff1f2;color:#b91c1c}
+    .booking-card-info{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px}
+    .booking-info-item{padding:10px;background:#f8fafc;border-radius:10px;min-width:0}
+    .booking-info-item small{display:block;color:var(--muted);font:600 .59rem 'Noto Kufi Arabic',sans-serif;margin-bottom:4px}
+    .booking-info-item b,.booking-info-item a{font:700 .7rem 'Noto Kufi Arabic',sans-serif;color:var(--ink);text-decoration:none;word-break:break-word}
+    .booking-info-item a:hover{color:var(--primary)}
+    .booking-card-actions{display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:12px}
+    .booking-card-actions .btn{min-height:36px;padding:8px 11px;font-size:.67rem}
+    #bookingAdminModal .modal{max-height:calc(100dvh - 28px);display:flex;flex-direction:column}
+    #bookingAdminModal form{min-height:0;overflow:auto}
+    .booking-modal-layout{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}
+    .booking-detail-list{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .booking-detail-item{background:#f8fafc;border:1px solid var(--line);border-radius:11px;padding:11px}
+    .booking-detail-item.full{grid-column:1/-1}
+    .booking-detail-item small{display:block;color:var(--muted);font:600 .6rem 'Noto Kufi Arabic',sans-serif;margin-bottom:4px}
+    .booking-detail-item b,.booking-detail-item a{font:700 .73rem 'Noto Kufi Arabic',sans-serif;color:var(--ink);text-decoration:none;word-break:break-word}
+    .booking-admin-image{width:100%;height:225px;object-fit:cover;border-radius:12px;border:1px solid var(--line);background:#f1f5f9}
+    .booking-modal-tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .booking-link-box{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+    @media (max-width:900px){
+      .booking-admin-grid{grid-template-columns:1fr}.booking-stats{grid-template-columns:repeat(2,1fr)}.booking-modal-layout{grid-template-columns:1fr}
+    }
+    @media (max-width:650px){
+      .booking-public-shell{padding:10px}.booking-public-header{align-items:flex-start}.booking-public-brand img{width:55px;height:55px}.booking-public-intro{padding:19px}.booking-public-intro i{display:none}.booking-public-body{padding:16px}.booking-map{height:300px}.booking-card-info,.booking-detail-list{grid-template-columns:1fr}.booking-stats{grid-template-columns:1fr 1fr}.booking-public-header>.btn{font-size:0;padding:10px}.booking-public-header>.btn i{font-size:1rem}
+    }
+
   </style>
 </head>
 <body>
+  <section id="bookingScreen" class="booking-public-shell hidden">
+    <div class="booking-public-wrap">
+      <header class="booking-public-header">
+        <div class="booking-public-brand">
+          <img src="assets/logo.webp" alt="شعار حلول المنازل للعوازل">
+          <div><h1>شركة حلول المنازل للعوازل</h1><p>طلب موعد تمتير وتسعير الموقع</p></div>
+        </div>
+        <a class="btn btn-outline" href="./"><i class="fa-solid fa-lock"></i> دخول الإدارة</a>
+      </header>
+      <section class="booking-public-card">
+        <div class="booking-public-intro">
+          <div><h2>احجز موعد معاينة الموقع</h2><p>أدخل بياناتك وحدد موقع المنزل من الخريطة وارفع صورة واضحة للواجهة. سيتواصل معك فريقنا لتأكيد الموعد وإعداد التسعيرة المناسبة.</p></div>
+          <i class="fa-solid fa-house-circle-check"></i>
+        </div>
+        <div id="bookingFormPanel" class="booking-public-body">
+          <form id="customerBookingForm">
+            <div class="form-grid">
+              <div class="field"><label for="customerBookingName">الاسم الكامل *</label><input id="customerBookingName" class="input" required maxlength="120" autocomplete="name" placeholder="اكتب اسمك الكامل"></div>
+              <div class="field"><label for="customerBookingPhone">رقم الجوال *</label><input id="customerBookingPhone" class="input" required maxlength="20" inputmode="tel" autocomplete="tel" dir="ltr" placeholder="05xxxxxxxx"></div>
+              <div class="field"><label for="customerPreferredDate">التاريخ المفضل *</label><input id="customerPreferredDate" class="input" type="date" required></div>
+              <div class="field"><label for="customerPreferredTime">الوقت المفضل *</label><input id="customerPreferredTime" class="input" type="time" required></div>
+              <div class="field span-2"><label for="customerLocationLabel">وصف الموقع / الحي</label><input id="customerLocationLabel" class="input" maxlength="250" placeholder="مثال: الرياض، حي الياسمين، شارع..."></div>
+              <div class="field span-2">
+                <label>حدد موقع البيت من الخريطة *</label>
+                <div id="customerLocationMap" class="booking-map" aria-label="خريطة تحديد موقع المنزل"></div>
+                <input id="customerLocationLat" type="hidden"><input id="customerLocationLng" type="hidden">
+                <div class="location-tools"><button id="useMyLocationBtn" class="btn btn-soft" type="button"><i class="fa-solid fa-location-crosshairs"></i> استخدام موقعي الحالي</button><span id="customerLocationText" class="location-selection">اضغط على الخريطة لتثبيت موقع المنزل.</span></div>
+              </div>
+              <div class="field span-2">
+                <label>صورة واجهة البيت *</label>
+                <div class="upload-drop"><input id="customerFacadeImage" type="file" accept="image/jpeg,image/png,image/webp" required><i class="fa-regular fa-image"></i><b>اضغط لاختيار صورة الواجهة</b><span>JPG أو PNG أو WEBP — بحد أقصى 8 ميجابايت</span></div>
+                <img id="customerFacadePreview" class="facade-preview" alt="معاينة صورة واجهة البيت">
+              </div>
+              <div class="field span-2"><label for="customerBookingNotes">ملاحظات إضافية</label><textarea id="customerBookingNotes" class="textarea" maxlength="1000" placeholder="نوع العزل المطلوب أو أي تفاصيل تساعد فريق المعاينة"></textarea></div>
+            </div>
+            <div class="form-actions"><button id="customerBookingSubmitBtn" class="btn btn-primary" type="submit"><i class="fa-solid fa-calendar-check"></i> إرسال طلب الحجز</button></div>
+          </form>
+        </div>
+        <div id="bookingSuccessPanel" class="booking-success hidden">
+          <i class="fa-solid fa-circle-check"></i><h2>تم إرسال طلبك بنجاح</h2><p>سيقوم فريق حلول المنازل بمراجعة الطلب والتواصل معك لتأكيد موعد المعاينة.</p><span id="bookingReference" class="booking-reference">—</span><br><button id="newBookingBtn" class="btn btn-outline" type="button"><i class="fa-solid fa-plus"></i> إرسال طلب آخر</button>
+        </div>
+      </section>
+    </div>
+  </section>
+
   <section id="configScreen" class="config-shell hidden" aria-live="polite">
     <div class="config-card">
       <span class="private-chip"><i class="fa-solid fa-screwdriver-wrench"></i> إعداد لمرة واحدة</span>
@@ -400,6 +515,7 @@
       <div class="nav-label">القائمة الرئيسية</div>
       <nav class="nav-list" aria-label="التنقل الرئيسي">
         <button class="nav-btn active" data-page="dashboard"><i class="fa-solid fa-chart-pie"></i> لوحة التحكم</button>
+        <button class="nav-btn" data-page="bookings"><i class="fa-solid fa-calendar-check"></i> طلبات العملاء <span id="bookingNavBadge" class="badge" style="margin-right:auto;background:#fff;color:#145b91">0</span></button>
         <button class="nav-btn" data-page="incoming"><i class="fa-solid fa-arrow-trend-down"></i> الوارد - سندات القبض</button>
         <button class="nav-btn" data-page="outgoing"><i class="fa-solid fa-arrow-trend-up"></i> الصادر - سندات الصرف</button>
         <button class="nav-btn" data-page="schedule"><i class="fa-solid fa-calendar-days"></i> جدول العمل</button>
@@ -528,6 +644,26 @@
         </section>
 
 
+        <section id="page-bookings" class="page">
+          <div class="page-heading">
+            <div><h2>طلبات العملاء</h2><p>إدارة طلبات التمتير والتسعير وجدولة المواعيد والتواصل المباشر مع العميل.</p></div>
+            <div class="booking-link-box"><button id="copyBookingLinkBtn" class="btn btn-outline" type="button"><i class="fa-solid fa-link"></i> نسخ رابط الحجز</button><button id="openBookingLinkBtn" class="btn btn-primary" type="button"><i class="fa-solid fa-arrow-up-right-from-square"></i> فتح صفحة العملاء</button></div>
+          </div>
+          <div class="booking-stats">
+            <article class="booking-stat"><i class="fa-solid fa-inbox"></i><div><b id="bookingTotalCount">0</b><span>إجمالي الطلبات</span></div></article>
+            <article class="booking-stat"><i class="fa-regular fa-clock"></i><div><b id="bookingPendingCount">0</b><span>بانتظار المراجعة</span></div></article>
+            <article class="booking-stat"><i class="fa-solid fa-calendar-day"></i><div><b id="bookingScheduledCount">0</b><span>مواعيد مجدولة</span></div></article>
+            <article class="booking-stat"><i class="fa-solid fa-circle-check"></i><div><b id="bookingCompletedCount">0</b><span>طلبات مكتملة</span></div></article>
+          </div>
+          <section class="card">
+            <div class="card-body">
+              <div class="filters"><div class="filter-field search-filter"><label>بحث</label><input id="bookingSearch" class="input" placeholder="الاسم، الجوال، الحي أو رقم الطلب"></div><div class="filter-field"><label>الحالة</label><select id="bookingStatusFilter" class="select"><option value="all">كل الحالات</option><option value="pending">بانتظار المراجعة</option><option value="scheduled">مجدول</option><option value="completed">مكتمل</option><option value="rejected">مرفوض</option><option value="cancelled">ملغي</option></select></div><button id="bookingClearFilters" class="btn btn-soft" type="button"><i class="fa-solid fa-filter-circle-xmark"></i></button></div>
+            </div>
+          </section>
+          <div id="bookingAdminList" class="booking-admin-grid" style="margin-top:14px"></div>
+          <div id="bookingAdminEmpty" class="empty hidden"><i class="fa-regular fa-calendar-xmark"></i><b>لا توجد طلبات مطابقة</b><span>ستظهر طلبات العملاء الجديدة هنا تلقائياً.</span></div>
+        </section>
+
         <section id="page-schedule" class="page">
           <div class="page-heading">
             <div><h2>جدول العمل</h2><p>جدول سحابي مشترك ومتزامن بين جميع الأجهزة — نظّم المهام وشارك العرض الأسبوعي أو الشهري عبر واتساب.</p></div>
@@ -596,6 +732,38 @@
     </div>
   </div>
 
+  <div id="bookingAdminModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="bookingAdminModalTitle">
+    <div class="modal" style="width:min(100%,960px)">
+      <div class="modal-head"><h3 id="bookingAdminModalTitle">تفاصيل طلب العميل</h3><button class="icon-btn" data-close-modal="bookingAdminModal" aria-label="إغلاق"><i class="fa-solid fa-xmark"></i></button></div>
+      <form id="bookingAdminForm">
+        <div class="modal-body">
+          <div class="booking-modal-layout">
+            <div>
+              <div class="booking-detail-list">
+                <div class="booking-detail-item"><small>العميل</small><b id="bookingDetailName">—</b></div>
+                <div class="booking-detail-item"><small>رقم الجوال</small><a id="bookingDetailPhone" href="#">—</a></div>
+                <div class="booking-detail-item"><small>الموعد المفضل</small><b id="bookingDetailPreferred">—</b></div>
+                <div class="booking-detail-item"><small>تاريخ الطلب</small><b id="bookingDetailCreated">—</b></div>
+                <div class="booking-detail-item full"><small>الموقع</small><a id="bookingDetailLocation" href="#" target="_blank" rel="noopener">—</a></div>
+                <div class="booking-detail-item full"><small>ملاحظات العميل</small><b id="bookingDetailNotes">—</b></div>
+              </div>
+              <div class="booking-modal-tools"><a id="bookingWhatsAppBtn" class="btn btn-primary" href="#" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> فتح واتساب</a><a id="bookingCallBtn" class="btn btn-outline" href="#"><i class="fa-solid fa-phone"></i> اتصال</a><a id="bookingMapBtn" class="btn btn-outline" href="#" target="_blank" rel="noopener"><i class="fa-solid fa-map-location-dot"></i> فتح الخريطة</a></div>
+            </div>
+            <div><img id="bookingAdminImage" class="booking-admin-image" alt="صورة واجهة منزل العميل"><a id="bookingOpenImageBtn" class="btn btn-soft btn-block" style="margin-top:9px" href="#" target="_blank" rel="noopener"><i class="fa-solid fa-up-right-from-square"></i> فتح الصورة بالحجم الكامل</a></div>
+          </div>
+          <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
+          <div class="form-grid">
+            <div class="field"><label for="bookingAdminStatus">حالة الطلب</label><select id="bookingAdminStatus" class="select"><option value="pending">بانتظار المراجعة</option><option value="scheduled">مجدول</option><option value="completed">مكتمل</option><option value="rejected">مرفوض</option><option value="cancelled">ملغي</option></select></div>
+            <div class="field"><label for="bookingScheduledDate">تاريخ الموعد المعتمد</label><input id="bookingScheduledDate" class="input" type="date"></div>
+            <div class="field"><label for="bookingScheduledTime">وقت الموعد المعتمد</label><input id="bookingScheduledTime" class="input" type="time"></div>
+            <div class="field span-2"><label for="bookingAdminNotes">ملاحظات الإدارة</label><textarea id="bookingAdminNotes" class="textarea" maxlength="1500" placeholder="ملاحظات التواصل أو التسعير أو سبب الرفض والإلغاء"></textarea></div>
+          </div>
+        </div>
+        <div class="modal-actions"><div class="left-actions"><button id="bookingRejectBtn" class="btn btn-danger" type="button"><i class="fa-solid fa-ban"></i> رفض الطلب</button><button id="bookingCancelBtn" class="btn btn-soft" type="button"><i class="fa-solid fa-calendar-xmark"></i> إلغاء الموعد</button></div><button class="btn btn-soft" type="button" data-close-modal="bookingAdminModal">إغلاق</button><button id="bookingAdminSaveBtn" class="btn btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> حفظ التغييرات</button></div>
+      </form>
+    </div>
+  </div>
+
   <div id="confirmModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
     <div class="modal"><div class="modal-head"><h3 id="confirmTitle">تأكيد العملية</h3><button class="icon-btn" data-close-modal="confirmModal" aria-label="إغلاق"><i class="fa-solid fa-xmark"></i></button></div><div class="modal-body"><p id="confirmMessage"></p></div><div class="modal-actions"><button class="btn btn-soft" data-close-modal="confirmModal">إلغاء</button><button id="confirmActionBtn" class="btn btn-danger">تأكيد</button></div></div>
   </div>
@@ -603,6 +771,7 @@
   <div id="toastStack" class="toast-stack" aria-live="polite"></div>
   <div id="loadingOverlay" class="loading-overlay"><div class="spinner-box"><span class="spinner"></span><span id="loadingText">جاري التحميل...</span></div></div>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
   <script>
@@ -623,6 +792,7 @@
 
   const PAGE_META = {
     dashboard: ['لوحة التحكم','ملخص فوري للوارد والصادر والرصيد'],
+    bookings: ['طلبات العملاء','إدارة طلبات التمتير والتسعير والمواعيد'],
     incoming: ['سندات القبض','إدارة جميع المبالغ الواردة'],
     outgoing: ['سندات الصرف','إدارة جميع المبالغ الصادرة'],
     schedule: ['جدول العمل','تنظيم المهام والمواعيد الأسبوعية والشهرية'],
@@ -644,6 +814,8 @@
     syncInFlight: false,
     syncQueued: false,
     scheduleTasks: [],
+    bookings: [],
+    selectedBookingId: null,
     scheduleView: 'week',
     scheduleCursor: new Date(),
     editingTaskId: null
@@ -669,6 +841,15 @@
       state.client = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_PUBLISHABLE_KEY, {
         auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
       });
+
+      if(isCustomerBookingMode()){
+        $('configScreen').classList.add('hidden');
+        $('loginScreen').classList.add('hidden');
+        $('appShell').classList.add('hidden');
+        $('bookingScreen').classList.remove('hidden');
+        initializeCustomerBookingPortal();
+        return;
+      }
 
       state.client.auth.onAuthStateChange((_event, session) => {
         handleSession(session);
@@ -701,6 +882,19 @@
     $('refreshAuditBtn').addEventListener('click', loadAudit);
     $('mobileMenuBtn').addEventListener('click', ()=>toggleSidebar(true));
     $('sidebarBackdrop').addEventListener('click', ()=>toggleSidebar(false));
+
+    $('customerBookingForm').addEventListener('submit',submitCustomerBooking);
+    $('customerFacadeImage').addEventListener('change',previewCustomerFacadeImage);
+    $('useMyLocationBtn').addEventListener('click',useCustomerCurrentLocation);
+    $('newBookingBtn').addEventListener('click',resetCustomerBookingForm);
+    $('copyBookingLinkBtn').addEventListener('click',copyCustomerBookingLink);
+    $('openBookingLinkBtn').addEventListener('click',()=>window.open(getCustomerBookingUrl(),'_blank','noopener'));
+    $('bookingSearch').addEventListener('input',renderBookings);
+    $('bookingStatusFilter').addEventListener('change',renderBookings);
+    $('bookingClearFilters').addEventListener('click',()=>{$('bookingSearch').value='';$('bookingStatusFilter').value='all';renderBookings()});
+    $('bookingAdminForm').addEventListener('submit',saveBookingAdminChanges);
+    $('bookingRejectBtn').addEventListener('click',()=>quickBookingStatus('rejected'));
+    $('bookingCancelBtn').addEventListener('click',()=>quickBookingStatus('cancelled'));
 
     $('addTaskBtn').addEventListener('click', ()=>openTaskModal());
     $('taskForm').addEventListener('submit', saveScheduleTask);
@@ -741,7 +935,7 @@
     $('legacyFileInput').addEventListener('change', importLegacyFile);
 
     document.addEventListener('keydown',e=>{
-      if(e.key==='Escape'){closeModal('confirmModal');closeModal('taskModal');toggleSidebar(false)}
+      if(e.key==='Escape'){closeModal('confirmModal');closeModal('taskModal');closeModal('bookingAdminModal');toggleSidebar(false)}
     });
 
     window.addEventListener('online',()=>{ if(state.session) synchronizeNow('online'); });
@@ -770,7 +964,7 @@
     if(!session){
       unsubscribeRealtime();
       stopAutoSync();
-      state.entries=[];state.audit=[];state.scheduleTasks=[];renderSchedule();
+      state.entries=[];state.audit=[];state.scheduleTasks=[];state.bookings=[];renderSchedule();renderBookings();
       $('appShell').classList.add('hidden');
       $('configScreen').classList.add('hidden');
       $('loginScreen').classList.remove('hidden');
@@ -831,7 +1025,7 @@
     setSync('busy','جاري المزامنة');
     if(initial)showLoading('جاري تحميل البيانات السحابية...');
     try{
-      await Promise.all([loadEntries(),loadAudit(),loadScheduleTasks()]);
+      await Promise.all([loadEntries(),loadAudit(),loadScheduleTasks(),loadBookings()]);
       state.lastLoadedAt=new Date();
       renderAll();
       setSync('ok','متصل بالسحابة');
@@ -868,7 +1062,7 @@
     state.syncQueued=false;
     if(source!=='poll')setSync('busy','جاري المزامنة التلقائية');
     try{
-      await Promise.all([loadEntries(),loadAudit(),loadScheduleTasks()]);
+      await Promise.all([loadEntries(),loadAudit(),loadScheduleTasks(),loadBookings()]);
       state.lastLoadedAt=new Date();
       renderAll();
       setSync('ok','متزامن تلقائياً');
@@ -902,6 +1096,9 @@
       .on('postgres_changes',{event:'*',schema:'public',table:'work_schedule_tasks'},()=>{
         synchronizeNow('schedule-realtime');
       })
+      .on('postgres_changes',{event:'*',schema:'public',table:'customer_booking_requests'},()=>{
+        synchronizeNow('booking-realtime');
+      })
       .subscribe(status=>{
         if(status==='SUBSCRIBED')setSync('ok','متزامن تلقائياً');
         if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'){
@@ -915,7 +1112,7 @@
     if(state.realtimeChannel&&state.client){state.client.removeChannel(state.realtimeChannel);state.realtimeChannel=null}
   }
 
-  function renderAll(){renderDashboard();renderEntryTable('incoming');renderEntryTable('outgoing');renderActivity();updateLastLoaded()}
+  function renderAll(){renderDashboard();renderBookings();renderEntryTable('incoming');renderEntryTable('outgoing');renderActivity();updateLastLoaded()}
 
   function totals(){
     const incoming=state.entries.filter(e=>e.entry_type==='incoming');
@@ -1343,7 +1540,7 @@
   function scrollToForm(){setTimeout(()=>document.querySelector('#page-'+state.activePage+' .form-card')?.scrollIntoView({behavior:'smooth',block:'start'}),120)}
 
   async function exportBackup(){
-    const payload={exported_at:new Date().toISOString(),company:COMPANY.nameAr,entries:state.entries,schedule_tasks:state.scheduleTasks};const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`finance-backup-${todayISO()}.json`;document.body.append(a);a.click();a.remove();URL.revokeObjectURL(url);showToast('تم التصدير',`تم تجهيز نسخة تحتوي على ${state.entries.length} سند`)
+    const payload={exported_at:new Date().toISOString(),company:COMPANY.nameAr,entries:state.entries,schedule_tasks:state.scheduleTasks,customer_bookings:state.bookings};const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`finance-backup-${todayISO()}.json`;document.body.append(a);a.click();a.remove();URL.revokeObjectURL(url);showToast('تم التصدير',`تم تجهيز نسخة تحتوي على ${state.entries.length} سند`)
   }
 
   async function importLegacyFile(event){
@@ -1519,6 +1716,230 @@
       requestAnimationFrame(()=>requestAnimationFrame(()=>window.print()));
     };
     Promise.all([preloadImage(templateImage),preloadImage(signatureImage)]).then(openPrintDialog);
+  }
+
+
+  let customerBookingMap=null;
+  let customerBookingMarker=null;
+
+  function isCustomerBookingMode(){
+    const params=new URLSearchParams(location.search);
+    return params.get('booking')==='1'||location.hash==='#booking';
+  }
+
+  function getCustomerBookingUrl(){
+    const url=new URL(location.href);
+    url.search='';url.hash='';url.searchParams.set('booking','1');
+    return url.toString();
+  }
+
+  async function copyCustomerBookingLink(){
+    const url=getCustomerBookingUrl();
+    try{await navigator.clipboard.writeText(url);showToast('تم نسخ الرابط','يمكنك إرساله للعملاء الآن')}
+    catch{const area=document.createElement('textarea');area.value=url;document.body.append(area);area.select();document.execCommand('copy');area.remove();showToast('تم نسخ الرابط','يمكنك إرساله للعملاء الآن')}
+  }
+
+  function initializeCustomerBookingPortal(){
+    document.title='حجز موعد معاينة | حلول المنازل للعوازل';
+    $('customerPreferredDate').min=todayISO();
+    if(!$('customerPreferredDate').value)$('customerPreferredDate').value=todayISO();
+    setTimeout(initCustomerBookingMap,80);
+  }
+
+  function initCustomerBookingMap(){
+    if(customerBookingMap)return;
+    if(!window.L){$('customerLocationText').textContent='تعذر تحميل الخريطة. تحقق من اتصال الإنترنت ثم أعد فتح الصفحة.';showToast('تعذر تحميل الخريطة','تحقق من اتصال الإنترنت ثم أعد المحاولة','error');return;}
+    const defaultPoint=[24.7136,46.6753];
+    customerBookingMap=L.map('customerLocationMap',{zoomControl:true}).setView(defaultPoint,11);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(customerBookingMap);
+    customerBookingMap.on('click',event=>setCustomerBookingLocation(event.latlng.lat,event.latlng.lng,true));
+    setTimeout(()=>customerBookingMap.invalidateSize(),150);
+  }
+
+  function setCustomerBookingLocation(lat,lng,center=false){
+    const preciseLat=Number(lat).toFixed(6),preciseLng=Number(lng).toFixed(6);
+    $('customerLocationLat').value=preciseLat;$('customerLocationLng').value=preciseLng;
+    $('customerLocationText').textContent=`تم تحديد الموقع: ${preciseLat}, ${preciseLng}`;
+    if(!customerBookingMarker)customerBookingMarker=L.marker([lat,lng],{draggable:true}).addTo(customerBookingMap);
+    else customerBookingMarker.setLatLng([lat,lng]);
+    customerBookingMarker.off('dragend').on('dragend',e=>{const point=e.target.getLatLng();setCustomerBookingLocation(point.lat,point.lng,false)});
+    if(center)customerBookingMap.setView([lat,lng],16);
+  }
+
+  function useCustomerCurrentLocation(){
+    if(!navigator.geolocation){showToast('الموقع غير متاح','جهازك لا يدعم تحديد الموقع','error');return}
+    setButtonBusy($('useMyLocationBtn'),true,'جاري تحديد الموقع...');
+    navigator.geolocation.getCurrentPosition(position=>{
+      setCustomerBookingLocation(position.coords.latitude,position.coords.longitude,true);
+      setButtonBusy($('useMyLocationBtn'),false);
+    },error=>{
+      console.error(error);setButtonBusy($('useMyLocationBtn'),false);showToast('تعذر تحديد الموقع','اسمح للموقع بالوصول إلى موقعك أو حدده يدويًا من الخريطة','error');
+    },{enableHighAccuracy:true,timeout:15000,maximumAge:30000});
+  }
+
+  function previewCustomerFacadeImage(){
+    const file=$('customerFacadeImage').files?.[0],preview=$('customerFacadePreview');
+    if(!file){preview.style.display='none';preview.removeAttribute('src');return}
+    if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>8*1024*1024){
+      $('customerFacadeImage').value='';preview.style.display='none';showToast('الصورة غير مقبولة','استخدم JPG أو PNG أو WEBP بحجم لا يتجاوز 8 ميجابايت','error');return;
+    }
+    preview.src=URL.createObjectURL(file);preview.style.display='block';
+  }
+
+  function normalizeSaudiPhone(value){
+    let digits=normalizePhoneDigits(value);
+    if(digits.startsWith('00966'))digits=digits.slice(2);
+    if(digits.startsWith('966'))digits='0'+digits.slice(3);
+    if(digits.startsWith('5')&&digits.length===9)digits='0'+digits;
+    return digits;
+  }
+
+  function phoneToWhatsApp(value){
+    const local=normalizeSaudiPhone(value);
+    return local.startsWith('0')?'966'+local.slice(1):local;
+  }
+
+  async function submitCustomerBooking(event){
+    event.preventDefault();
+    const form=$('customerBookingForm');if(!form.reportValidity())return;
+    const phone=normalizeSaudiPhone($('customerBookingPhone').value);
+    const lat=Number($('customerLocationLat').value),lng=Number($('customerLocationLng').value);
+    const image=$('customerFacadeImage').files?.[0];
+    if(!/^05\d{8}$/.test(phone)){showToast('رقم الجوال غير صحيح','أدخل رقم جوال سعودي بصيغة 05xxxxxxxx','error');$('customerBookingPhone').focus();return}
+    if(!Number.isFinite(lat)||!Number.isFinite(lng)){showToast('حدد موقع المنزل','اضغط على الخريطة أو استخدم موقعك الحالي','error');return}
+    if(!image){showToast('الصورة مطلوبة','أرفق صورة واضحة لواجهة البيت','error');return}
+    if(image.size>8*1024*1024){showToast('حجم الصورة كبير','الحد الأعلى 8 ميجابايت','error');return}
+
+    const requestId=crypto.randomUUID?crypto.randomUUID():`${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    const extension=(image.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';
+    const imagePath=`requests/${requestId}.${extension}`;
+    setButtonBusy($('customerBookingSubmitBtn'),true,'جاري إرسال الطلب...');
+    try{
+      const {error:uploadError}=await state.client.storage.from('booking-facades').upload(imagePath,image,{contentType:image.type,upsert:false,cacheControl:'3600'});
+      if(uploadError)throw uploadError;
+      const payload={
+        id:requestId,customer_name:$('customerBookingName').value.trim(),customer_phone:phone,
+        preferred_date:$('customerPreferredDate').value,preferred_time:$('customerPreferredTime').value,
+        location_lat:lat,location_lng:lng,location_label:$('customerLocationLabel').value.trim()||null,
+        facade_image_path:imagePath,customer_notes:$('customerBookingNotes').value.trim()||null,status:'pending'
+      };
+      const {error}=await state.client.from('customer_booking_requests').insert(payload);if(error)throw error;
+      $('bookingReference').textContent=`REQ-${requestId.slice(0,8).toUpperCase()}`;
+      $('bookingFormPanel').classList.add('hidden');$('bookingSuccessPanel').classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'});
+    }catch(error){
+      console.error('Customer booking error:',error);showToast('تعذر إرسال الطلب',friendlyBookingDbError(error),'error');
+    }finally{setButtonBusy($('customerBookingSubmitBtn'),false)}
+  }
+
+  function resetCustomerBookingForm(){
+    $('customerBookingForm').reset();$('customerPreferredDate').value=todayISO();$('customerFacadePreview').style.display='none';$('customerFacadePreview').removeAttribute('src');$('customerLocationLat').value='';$('customerLocationLng').value='';$('customerLocationText').textContent='اضغط على الخريطة لتثبيت موقع المنزل.';
+    if(customerBookingMarker){customerBookingMap.removeLayer(customerBookingMarker);customerBookingMarker=null}
+    $('bookingSuccessPanel').classList.add('hidden');$('bookingFormPanel').classList.remove('hidden');setTimeout(()=>customerBookingMap?.invalidateSize(),100);
+  }
+
+  async function loadBookings(){
+    if(!state.session)return;
+    const rows=[];let from=0;const pageSize=1000;
+    while(true){
+      const {data,error}=await state.client.from('customer_booking_requests').select('*').order('created_at',{ascending:false}).range(from,from+pageSize-1);if(error)throw error;
+      rows.push(...(data||[]));if(!data||data.length<pageSize)break;from+=pageSize;
+    }
+    state.bookings=rows;renderBookings();
+  }
+
+  function bookingStatusLabel(status){return {pending:'بانتظار المراجعة',scheduled:'مجدول',completed:'مكتمل',rejected:'مرفوض',cancelled:'ملغي'}[status]||status||'—'}
+  function bookingReference(id){return `REQ-${String(id||'').slice(0,8).toUpperCase()}`}
+  function bookingMapUrl(row){return `https://www.google.com/maps?q=${encodeURIComponent(row.location_lat+','+row.location_lng)}`}
+  function bookingWhatsAppUrl(row){
+    const text=`مرحباً ${row.customer_name}، معك شركة حلول المنازل للعوازل بخصوص طلب معاينة الموقع رقم ${bookingReference(row.id)}.`;
+    return `https://wa.me/${phoneToWhatsApp(row.customer_phone)}?text=${encodeURIComponent(text)}`;
+  }
+  function preferredBookingText(row){return `${formatDate(row.preferred_date)} — ${String(row.preferred_time||'').slice(0,5)}`}
+
+  function filteredBookings(){
+    const search=$('bookingSearch')?.value.trim().toLowerCase()||'',status=$('bookingStatusFilter')?.value||'all';
+    return state.bookings.filter(row=>status==='all'||row.status===status).filter(row=>{
+      if(!search)return true;
+      return [row.customer_name,row.customer_phone,row.location_label,bookingReference(row.id)].join(' ').toLowerCase().includes(search)||normalizePhoneDigits(row.customer_phone).includes(normalizePhoneDigits(search));
+    });
+  }
+
+  function renderBookings(){
+    const list=$('bookingAdminList');if(!list)return;
+    const rows=filteredBookings();list.replaceChildren();
+    $('bookingAdminEmpty').classList.toggle('hidden',rows.length>0);
+    $('bookingTotalCount').textContent=state.bookings.length;$('bookingPendingCount').textContent=state.bookings.filter(x=>x.status==='pending').length;$('bookingScheduledCount').textContent=state.bookings.filter(x=>x.status==='scheduled').length;$('bookingCompletedCount').textContent=state.bookings.filter(x=>x.status==='completed').length;
+    const pending=state.bookings.filter(x=>x.status==='pending').length;$('bookingNavBadge').textContent=pending;$('bookingNavBadge').classList.toggle('hidden',pending===0);
+    rows.forEach(row=>list.append(buildBookingCard(row)));
+  }
+
+  function buildBookingCard(row){
+    const card=document.createElement('article');card.className='booking-card';
+    const head=document.createElement('div');head.className='booking-card-head';
+    const title=document.createElement('div');const h=document.createElement('h3');h.textContent=row.customer_name;const ref=document.createElement('div');ref.className='booking-card-ref';ref.textContent=bookingReference(row.id);title.append(h,ref);
+    const status=document.createElement('span');status.className=`booking-status ${row.status}`;status.textContent=bookingStatusLabel(row.status);head.append(title,status);
+    const info=document.createElement('div');info.className='booking-card-info';
+    info.append(bookingInfoItem('رقم الجوال',row.customer_phone,bookingWhatsAppUrl(row),'_blank'),bookingInfoItem('الموعد المفضل',preferredBookingText(row)),bookingInfoItem('الموقع',row.location_label||`${row.location_lat}, ${row.location_lng}`,bookingMapUrl(row),'_blank'),bookingInfoItem('تاريخ الإرسال',formatDateTime(row.created_at)));
+    const actions=document.createElement('div');actions.className='booking-card-actions';
+    const details=document.createElement('button');details.type='button';details.className='btn btn-outline';details.innerHTML='<i class="fa-solid fa-eye"></i> التفاصيل';details.addEventListener('click',()=>openBookingAdminModal(row.id));
+    const schedule=document.createElement('button');schedule.type='button';schedule.className='btn btn-primary';schedule.innerHTML='<i class="fa-solid fa-calendar-plus"></i> جدولة';schedule.addEventListener('click',()=>openBookingAdminModal(row.id,true));
+    const wa=document.createElement('a');wa.className='btn btn-soft';wa.href=bookingWhatsAppUrl(row);wa.target='_blank';wa.rel='noopener';wa.innerHTML='<i class="fa-brands fa-whatsapp"></i> واتساب';
+    actions.append(details,schedule,wa);card.append(head,info,actions);return card;
+  }
+
+  function bookingInfoItem(label,value,href=null,target=null){
+    const box=document.createElement('div');box.className='booking-info-item';const small=document.createElement('small');small.textContent=label;const node=href?document.createElement('a'):document.createElement('b');node.textContent=value||'—';if(href){node.href=href;if(target){node.target=target;node.rel='noopener'}}box.append(small,node);return box;
+  }
+
+  async function openBookingAdminModal(id,focusSchedule=false){
+    const row=state.bookings.find(x=>x.id===id);if(!row)return;state.selectedBookingId=id;
+    $('bookingAdminModalTitle').textContent=`تفاصيل ${bookingReference(id)}`;$('bookingDetailName').textContent=row.customer_name;$('bookingDetailPhone').textContent=row.customer_phone;$('bookingDetailPhone').href=bookingWhatsAppUrl(row);$('bookingDetailPhone').target='_blank';
+    $('bookingDetailPreferred').textContent=preferredBookingText(row);$('bookingDetailCreated').textContent=formatDateTime(row.created_at);$('bookingDetailLocation').textContent=row.location_label||`${row.location_lat}, ${row.location_lng}`;$('bookingDetailLocation').href=bookingMapUrl(row);$('bookingDetailNotes').textContent=row.customer_notes||'لا توجد ملاحظات';
+    $('bookingWhatsAppBtn').href=bookingWhatsAppUrl(row);$('bookingCallBtn').href=`tel:${row.customer_phone}`;$('bookingMapBtn').href=bookingMapUrl(row);
+    $('bookingAdminStatus').value=row.status||'pending';$('bookingScheduledDate').value=row.scheduled_date||row.preferred_date||'';$('bookingScheduledTime').value=String(row.scheduled_time||row.preferred_time||'').slice(0,5);$('bookingAdminNotes').value=row.admin_notes||'';
+    $('bookingAdminImage').removeAttribute('src');$('bookingAdminImage').alt='جاري تحميل صورة الواجهة';$('bookingOpenImageBtn').href='#';
+    openModal('bookingAdminModal');if(focusSchedule){$('bookingAdminStatus').value='scheduled';setTimeout(()=>$('bookingScheduledDate').focus(),80)}
+    try{
+      const {data,error}=await state.client.storage.from('booking-facades').createSignedUrl(row.facade_image_path,3600);if(error)throw error;
+      $('bookingAdminImage').src=data.signedUrl;$('bookingAdminImage').alt='صورة واجهة منزل العميل';$('bookingOpenImageBtn').href=data.signedUrl;
+    }catch(error){console.error(error);$('bookingAdminImage').alt='تعذر تحميل الصورة';}
+  }
+
+  async function saveBookingAdminChanges(event){event.preventDefault();await persistBookingAdminChanges()}
+
+  function quickBookingStatus(status){
+    const labels={rejected:'رفض هذا الطلب؟',cancelled:'إلغاء هذا الموعد؟'};
+    openConfirm('تأكيد الإجراء',labels[status]||'تأكيد تغيير الحالة؟',async()=>{closeModal('confirmModal');$('bookingAdminStatus').value=status;await persistBookingAdminChanges(status)});
+  }
+
+  async function persistBookingAdminChanges(forcedStatus=null){
+    const row=state.bookings.find(x=>x.id===state.selectedBookingId);if(!row)return;
+    const status=forcedStatus||$('bookingAdminStatus').value,date=$('bookingScheduledDate').value,time=$('bookingScheduledTime').value;
+    if(status==='scheduled'&&(!date||!time)){showToast('بيانات الموعد ناقصة','حدد تاريخ ووقت الموعد المعتمد','error');return}
+    setButtonBusy($('bookingAdminSaveBtn'),true,'جاري الحفظ...');setSync('busy','جاري تحديث طلب العميل');
+    try{
+      let scheduleTaskId=row.schedule_task_id||null;
+      const taskPayload={title:`تمتير موقع — ${row.customer_name}`,task_date:date||row.preferred_date,task_time:`${String(time||row.preferred_time).slice(0,5)}:00`,task_location:`${row.location_label?row.location_label+' — ':''}${row.location_lat}, ${row.location_lng}`,notes:`طلب عميل ${bookingReference(row.id)} — جوال ${row.customer_phone}${row.customer_notes?' — '+row.customer_notes:''}`,is_completed:status==='completed'};
+      if(['scheduled','completed'].includes(status)){
+        if(scheduleTaskId){const {error}=await state.client.from('work_schedule_tasks').update(taskPayload).eq('id',scheduleTaskId);if(error)throw error}
+        else{const {data,error}=await state.client.from('work_schedule_tasks').insert(taskPayload).select('id').single();if(error)throw error;scheduleTaskId=data.id}
+      }else if(['pending','rejected','cancelled'].includes(status)&&scheduleTaskId){
+        const {error}=await state.client.from('work_schedule_tasks').delete().eq('id',scheduleTaskId);if(error)throw error;scheduleTaskId=null;
+      }
+      const payload={status,scheduled_date:status==='scheduled'||status==='completed'?(date||row.scheduled_date||row.preferred_date):null,scheduled_time:status==='scheduled'||status==='completed'?`${String(time||row.scheduled_time||row.preferred_time).slice(0,5)}:00`:null,admin_notes:$('bookingAdminNotes').value.trim()||null,schedule_task_id:scheduleTaskId,updated_at:new Date().toISOString()};
+      const {error}=await state.client.from('customer_booking_requests').update(payload).eq('id',row.id);if(error)throw error;
+      closeModal('bookingAdminModal');await synchronizeNow('booking-update');showToast('تم تحديث الطلب',`أصبحت الحالة: ${bookingStatusLabel(status)}`);navigate('bookings');
+    }catch(error){console.error(error);setSync('error','فشل تحديث الطلب');showToast('تعذر تحديث الطلب',friendlyBookingDbError(error),'error')}
+    finally{setButtonBusy($('bookingAdminSaveBtn'),false)}
+  }
+
+  function friendlyBookingDbError(error){
+    const m=String(error?.message||'');
+    if(/customer_booking_requests|booking-facades|relation .* does not exist|Bucket not found/i.test(m))return 'إعداد طلبات العملاء غير مكتمل. شغّل ملف supabase_booking_setup.sql مرة واحدة في Supabase';
+    if(/row-level security|permission denied/i.test(m))return 'صلاحيات قاعدة البيانات أو رفع الصور غير مفعلة. شغّل ملف supabase_booking_setup.sql';
+    if(/payload too large|maximum allowed size/i.test(m))return 'حجم الصورة أكبر من الحد المسموح';
+    if(/Failed to fetch|NetworkError/i.test(m))return 'تعذر الوصول إلى الخادم. تحقق من اتصال الإنترنت';
+    return m||'حدث خطأ غير متوقع أثناء معالجة الطلب';
   }
 
 
