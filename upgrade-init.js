@@ -8,17 +8,39 @@
   <div class="card" style="margin:16px 0"><div class="card-header"><h3 class="card-title">متابعة التشغيل</h3></div><div class="card-body"><div class="mini-stats"><div class="mini-stat"><span>طلبات بانتظار المراجعة</span><b id="opsPending">—</b></div><div class="mini-stat"><span>مهام اليوم غير المنجزة</span><b id="opsToday">—</b></div><div class="mini-stat"><span>مهام سابقة غير منجزة</span><b id="opsOverdue">—</b></div><div class="mini-stat"><span>نسبة إنجاز مهام الفترة</span><b id="opsCompletion">—</b></div></div></div></div>
 </section>`}
  function installBookingUI(){
-  const date=document.getElementById('customerPreferredDate'),time=document.getElementById('customerPreferredTime');if(!date||!time)return;
-  date.parentElement.innerHTML='<label for="customerPreferredDate">التاريخ المفضل *</label><input id="customerPreferredDate" type="hidden"><div class="booking-calendar"><div class="booking-calendar-nav"><button id="bookingMonthPrev" class="btn btn-soft" type="button">السابق</button><b id="bookingMonthLabel"></b><button id="bookingMonthNext" class="btn btn-soft" type="button">التالي</button></div><div class="booking-weekdays"><span>س</span><span>أ</span><span>إ</span><span>ث</span><span>أر</span><span>خ</span><span>ج</span></div><div id="bookingCalendarDays" class="booking-calendar-days"></div><p id="bookingSelectedDate">اختر يوماً متاحاً من التقويم</p></div>';
-  time.parentElement.innerHTML='<label for="customerPreferredTime">الوقت المفضل *</label><select id="customerPreferredTime" class="input" required disabled><option value="">اختر اليوم أولاً</option></select><p id="bookingAvailabilityMessage" role="status" aria-live="polite"></p><button id="bookingAvailabilityRetry" class="btn btn-soft hidden" type="button">تحديث المواعيد</button>';
+  const date=document.getElementById('customerPreferredDate'),time=document.getElementById('customerPreferredTime');if(!date||!time)return false;
+  if(!document.getElementById('bookingCalendarDays')) date.parentElement.innerHTML='<label for="customerPreferredDate">التاريخ المفضل *</label><input id="customerPreferredDate" type="hidden"><div class="booking-calendar"><div class="booking-calendar-nav"><button id="bookingMonthPrev" class="btn btn-soft" type="button">السابق</button><b id="bookingMonthLabel">جاري تحميل التقويم...</b><button id="bookingMonthNext" class="btn btn-soft" type="button">التالي</button></div><div class="booking-weekdays"><span>س</span><span>أ</span><span>إ</span><span>ث</span><span>أر</span><span>خ</span><span>ج</span></div><div id="bookingCalendarDays" class="booking-calendar-days"></div><p id="bookingSelectedDate">جاري تحميل الأيام المتاحة...</p></div>';
+  const currentTime=document.getElementById('customerPreferredTime');
+  if(currentTime&&currentTime.tagName!=='SELECT') currentTime.parentElement.innerHTML='<label for="customerPreferredTime">الوقت المفضل *</label><select id="customerPreferredTime" class="input" required disabled><option value="">اختر اليوم أولاً</option></select><p id="bookingAvailabilityMessage" role="status" aria-live="polite">جاري تحميل المواعيد...</p><button id="bookingAvailabilityRetry" class="btn btn-soft hidden" type="button">تحديث المواعيد</button>';
+  return true;
+ }
+ function startBookingCalendarWhenReady(){
+  if(!document.getElementById('bookingCalendarDays'))return;
+  let tries=0;
+  const boot=()=>{
+   tries++;
+   try{
+    if(typeof state!=='undefined'&&state.client&&typeof initializeBookingCalendar==='function'){
+     initializeBookingCalendar();
+     return;
+    }
+   }catch(e){console.warn('Booking calendar init:',e)}
+   if(tries<80)setTimeout(boot,100);
+   else{
+    const label=document.getElementById('bookingMonthLabel'),msg=document.getElementById('bookingSelectedDate');
+    if(label)label.textContent='تعذر تحميل التقويم';
+    if(msg)msg.textContent='حدّث الصفحة وحاول مرة أخرى.';
+   }
+  };
+  setTimeout(boot,0);
  }
  function addExcelButton(scope,anchorId,label){if(document.getElementById('excel-'+scope))return;const anchor=document.getElementById(anchorId);if(!anchor)return;const b=document.createElement('button');b.id='excel-'+scope;b.type='button';b.className='btn btn-success';b.textContent=label;anchor.parentElement.insertBefore(b,anchor.nextSibling)}
  document.addEventListener('DOMContentLoaded',()=>{
   installBookingUI();
+  startBookingCalendarWhenReady();
   const dashboard=document.getElementById('page-dashboard');if(dashboard&&!document.getElementById('reportPreset')){const summary=dashboard.querySelector('.summary-grid');if(summary)summary.insertAdjacentHTML('afterend',reportMarkup())}
   addExcelButton('incoming','incomingShown','تصدير النتائج Excel');addExcelButton('outgoing','outgoingShown','تصدير النتائج Excel');addExcelButton('all','exportBtn','تصدير جميع السندات Excel');
   if(window.HulullFreeBookingMap)window.initCustomerBookingMap=window.HulullFreeBookingMap;
-  if(typeof initCustomerBooking==='function'){const original=initCustomerBooking;window.initCustomerBooking=function(){const result=original.apply(this,arguments);initializeBookingCalendar();return result}}
   if(typeof renderDashboard==='function'){const originalDashboard=renderDashboard;window.renderDashboard=function(){const result=originalDashboard.apply(this,arguments);renderFinancialReports();return result}}
   try{bindReports()}catch(e){console.warn('Reports init:',e)}
  });
