@@ -1,9 +1,15 @@
 'use strict';
+function bookingValidISODate(value){
+ const text=String(value||'');
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(text))return false;
+ const d=new Date(text+'T12:00:00Z');
+ return Number.isFinite(d.getTime())&&d.toISOString().slice(0,10)===text;
+}
 const BookingRules={
  times:Array.from({length:8},(_,i)=>String(i+9).padStart(2,'0')+':00'),
  today(now=new Date()){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Riyadh',year:'numeric',month:'2-digit',day:'2-digit'}).format(now)},
  addDays(iso,n){const d=new Date(iso+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10)},
- allowed(date,today=this.today()){return validISODate(date)&&date>today&&new Date(date+'T12:00:00Z').getUTCDay()!==5},
+ allowed(date,today=this.today()){return bookingValidISODate(date)&&date>today&&new Date(date+'T12:00:00Z').getUTCDay()!==5},
  validate(date,time,today=this.today()){if(!this.allowed(date,today))throw new Error('الحجز من اليوم التالي فقط، والجمعة إجازة.');if(!this.times.includes(String(time).slice(0,5))||!/^\d{2}:00(?::00)?$/.test(time))throw new Error('اختر موعداً متاحاً من ٩ صباحاً إلى ٤ عصراً.');}
 };
 const BookingCalendar={month:null,days:[],request:0,timer:null,today:null,loading:false};
@@ -15,7 +21,8 @@ function bookingError(error){
  if(/BOOKING_TIME_CLOSED/.test(m))return 'اختر وقتاً متاحاً من ٩ صباحاً إلى ٤ عصراً.';
  if(/booking_availability|PGRST202|BOOKING_SETUP/.test(m))return 'الحجز غير متاح مؤقتاً. يرجى التواصل مع المؤسسة.';
  if(/BOOKING_/.test(m))return 'تعذر تثبيت الموعد. حدّث المواعيد ثم حاول مرة أخرى.';
- return friendlyBookingDbError(error);
+ if(typeof friendlyBookingDbError==='function')return friendlyBookingDbError(error);
+ return 'تعذر تحميل المواعيد. اضغط تحديث المواعيد وحاول مرة أخرى.';
 }
 function initializeBookingCalendar(){
  const tomorrow=BookingRules.addDays(BookingRules.today(),1);BookingCalendar.month=tomorrow.slice(0,7)+'-01';
@@ -41,7 +48,7 @@ async function loadBookingAvailability(){
  try{
   const {data,error}=await state.client.rpc('booking_availability',{p_from:start,p_to:end});if(error)throw error;
   if(sequence!==BookingCalendar.request)return false;
-  if(!data||!Array.isArray(data.days)||!validISODate(data.today))throw new Error('BOOKING_SETUP');
+  if(!data||!Array.isArray(data.days)||!bookingValidISODate(data.today))throw new Error('BOOKING_SETUP');
   BookingCalendar.days=data.days;BookingCalendar.today=data.today;BookingCalendar.loading=false;
   renderBookingCalendar();renderBookingTimes();return true;
  }catch(error){
@@ -67,7 +74,8 @@ function renderBookingCalendar(){
 function renderBookingTimes(){
  const date=$('customerPreferredDate').value,day=BookingCalendar.days.find(d=>d.date===date),select=$('customerPreferredTime'),previous=select.value;
  select.replaceChildren();const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='اختر الوقت المتاح';select.append(placeholder);
- $('bookingSelectedDate').textContent=date?'اليوم المختار: '+formatDate(date):'اختر يوماً متاحاً من التقويم';
+ const formattedDate=typeof formatDate==='function'?formatDate(date):date;
+ $('bookingSelectedDate').textContent=date?'اليوم المختار: '+formattedDate:'اختر يوماً متاحاً من التقويم';
  for(const time of BookingRules.times){const option=document.createElement('option');option.value=time;const hour=Number(time.slice(0,2));const free=!!day?.available&&!day.taken.includes(time);option.disabled=!free;option.textContent=`${hour>12?hour-12:hour}:00 ${hour<12?'صباحًا':'مساءً'}${free?'':' — غير متاح'}`;select.append(option)}
  const available=!!day?.available;select.disabled=!available||BookingCalendar.loading;
  if(available&&!day.taken.includes(previous)&&BookingRules.times.includes(previous))select.value=previous;
