@@ -27,3 +27,4 @@ function setCustomerBookingLocation(lat,lng,center=false){
  }else customerBookingMarker.setLatLng([lat,lng]);
  if(center)customerBookingMap.setView([lat,lng],17);
 }
+window.HulullFreeBookingMap=initCustomerBookingMap;
