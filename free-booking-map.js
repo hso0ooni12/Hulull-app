@@ -28,3 +28,28 @@ function setCustomerBookingLocation(lat,lng,center=false){
  if(center)customerBookingMap.setView([lat,lng],17);
 }
 window.HulullFreeBookingMap=initCustomerBookingMap;
+
+// Hulull 2.0 dashboard correction: today's list contains accepted bookings only.
+(()=>{
+ const byId=id=>document.getElementById(id);
+ const todaySA=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Riyadh',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+ const dateOf=b=>b.scheduled_date||b.preferred_date||'';
+ const timeOf=b=>String(b.scheduled_time||b.preferred_time||'').slice(0,5);
+ const clean=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ function renderAcceptedToday(){
+  if(typeof state==='undefined'||!byId('h2book')||!byId('h2TodayList'))return;
+  const today=todaySA();
+  const rows=(state.bookings||[]).filter(b=>b.status==='accepted'&&dateOf(b)===today).sort((a,b)=>timeOf(a).localeCompare(timeOf(b)));
+  byId('h2book').textContent=rows.length;
+  byId('h2TodayList').innerHTML=rows.length?rows.slice(0,5).map(b=>`<button class="h2-row" data-book="${clean(b.id)}"><span><b>${clean(timeOf(b))} — ${clean(b.customer_name)}</b><small>${clean(b.customer_phone)} · ${clean(b.location_label||'')}</small></span>‹</button>`).join(''):'<div class="h2-empty">لا توجد مواعيد مقبولة اليوم.</div>';
+ }
+ function boot(){
+  let tries=0;
+  const start=()=>{tries++;renderAcceptedToday();if(!byId('h2Today')&&tries<40)setTimeout(start,250)};
+  start();
+  setInterval(()=>{if(document.visibilityState==='visible')renderAcceptedToday()},30000);
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')setTimeout(renderAcceptedToday,150)});
+  document.addEventListener('click',e=>{if(e.target.closest?.('#h2Refresh'))setTimeout(renderAcceptedToday,500)});
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,300));else setTimeout(boot,300);
+})();
