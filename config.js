@@ -5,10 +5,11 @@ window.APP_CONFIG = {
 };
 
 // تحميل إضافات التقارير والحجز قبل كود التطبيق الرئيسي مع الإبقاء على index.html والطباعة كما هما.
+const hulullScript = src => document.write('<script src="'+src+'"></'+'script>');
 document.write('<link rel="stylesheet" href="reports.css">');
-document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"><\\/script>');
-document.write('<script src="analytics.js"><\\/script>');
-document.write('<script src="booking-rules.js"><\\/script>');
-document.write('<script src="free-booking-map.js"><\\/script>');
-document.write('<script src="excel-export.js"><\\/script>');
-document.write('<script src="upgrade-init.js"><\\/script>');
+hulullScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
+hulullScript('analytics.js');
+hulullScript('booking-rules.js');
+hulullScript('free-booking-map.js');
+hulullScript('excel-export.js');
+hulullScript('upgrade-init.js');
