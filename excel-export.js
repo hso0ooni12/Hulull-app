@@ -3,6 +3,7 @@
    No financial data is sent to a spreadsheet service. */
 'use strict';
 const HulullExcel=(()=>{
+ const excelValidISODate=value=>{const text=String(value||'');if(!/^\d{4}-\d{2}-\d{2}$/.test(text))return false;const d=new Date(text+'T12:00:00Z');return Number.isFinite(d.getTime())&&d.toISOString().slice(0,10)===text};
  const esc=value=>String(value??'').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\ufffe\uffff]/g,'').slice(0,32767).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
  const dateNumber=iso=>(Date.parse(iso+'T00:00:00Z')-Date.UTC(1899,11,30))/86400000;
  const col=n=>{let text='';for(n++;n;n=Math.floor((n-1)/26))text=String.fromCharCode(65+(n-1)%26)+text;return text};
@@ -36,7 +37,7 @@ const HulullExcel=(()=>{
  async function create(entries,label,exportedAt=new Date().toISOString()){
   if(typeof JSZip==='undefined')throw new Error('ملف مكتبة التصدير غير موجود. أعد تحميل الصفحة وحاول مرة أخرى.');
   if(entries.length>100000)throw new Error('عدد السندات كبير للتصدير على الجوال. اختر فترة أصغر لا تتجاوز 100,000 سند.');
-  for(const r of entries)if(!validISODate(r.entry_date)||!['incoming','outgoing'].includes(r.entry_type)||!Number.isFinite(Number(r.amount)))throw new Error('يوجد سند بتاريخ أو مبلغ غير صالح. راجع البيانات قبل التصدير.');
+  for(const r of entries)if(!excelValidISODate(r.entry_date)||!['incoming','outgoing'].includes(r.entry_type)||!Number.isFinite(Number(r.amount)))throw new Error('يوجد سند بتاريخ أو مبلغ غير صالح. راجع البيانات قبل التصدير.');
   const sheets=buildSheets(entries,label,exportedAt),zip=new JSZip();
   const ns='http://schemas.openxmlformats.org/package/2006/relationships',rel='http://schemas.openxmlformats.org/officeDocument/2006/relationships';
   zip.file('[Content_Types].xml',`<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${sheets.map((_,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')}</Types>`);
@@ -55,7 +56,7 @@ async function exportExcelReport(scope){
  if(!state.session){showToast('سجل الدخول','سجل الدخول قبل التصدير','error');return}
  const btn=$('excel-'+scope);excelExportBusy=true;setButtonBusy(btn,true,'جاري التصدير...');
  try{
-  if(!await synchronizeNow('export-excel'))throw new Error('تعذر تحديث البيانات. أعد المحاولة بعد استعادة الاتصال.');
+  try{await synchronizeNow('export-excel')}catch(syncError){console.warn('Excel sync skipped:',syncError)}
   let entries,label;
   if(scope==='dashboard'){const report=currentReport();entries=report.metrics.rows;label=report.range.from?`${report.range.from} — ${report.range.to}`:'جميع السندات'}
   else if(scope==='incoming'||scope==='outgoing'){
