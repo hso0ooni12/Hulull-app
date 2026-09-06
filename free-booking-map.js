@@ -35,7 +35,7 @@ window.HulullFreeBookingMap=initCustomerBookingMap;
  const todaySA=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Riyadh',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
  const dateOf=b=>b.scheduled_date||b.preferred_date||'';
  const timeOf=b=>String(b.scheduled_time||b.preferred_time||'').slice(0,5);
- const clean=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const clean=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
  function renderAcceptedToday(){
   if(typeof state==='undefined'||!byId('h2book')||!byId('h2TodayList'))return;
   const today=todaySA();
@@ -52,4 +52,38 @@ window.HulullFreeBookingMap=initCustomerBookingMap;
   document.addEventListener('click',e=>{if(e.target.closest?.('#h2Refresh'))setTimeout(renderAcceptedToday,500)});
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,300));else setTimeout(boot,300);
+})();
+
+// Quick access to the field employee page from the customer bookings screen.
+(()=>{
+ const BUTTON_ID='openFieldFollowUpBtn';
+ function addFollowUpButton(){
+  if(document.getElementById(BUTTON_ID))return true;
+  const page=document.getElementById('page-bookings');
+  if(!page)return false;
+  const controls=[...page.querySelectorAll('button,a')];
+  const anchor=controls.find(el=>/فتح صفحة العملاء/.test(el.textContent||''))||controls.find(el=>/نسخ رابط الحجز/.test(el.textContent||''));
+  if(!anchor||!anchor.parentElement)return false;
+  const btn=document.createElement('a');
+  btn.id=BUTTON_ID;
+  btn.href='field.html?v=5';
+  btn.target='_blank';
+  btn.rel='noopener';
+  btn.className=anchor.className||'btn btn-primary';
+  btn.innerHTML='<i class="fa-solid fa-list-check"></i> متابعة الطلبات';
+  btn.style.textDecoration='none';
+  btn.style.display='inline-flex';
+  btn.style.alignItems='center';
+  btn.style.justifyContent='center';
+  btn.style.gap='8px';
+  anchor.parentElement.appendChild(btn);
+  return true;
+ }
+ function boot(){
+  let tries=0;
+  const timer=setInterval(()=>{tries++;if(addFollowUpButton()||tries>60)clearInterval(timer)},250);
+  const observer=new MutationObserver(()=>addFollowUpButton());
+  observer.observe(document.body,{childList:true,subtree:true});
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
