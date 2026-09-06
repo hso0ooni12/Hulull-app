@@ -16,3 +16,4 @@ hulullScript('excel-export.js');
 hulullScript('upgrade-init.js');
 hulullScript('hulull-v2.js');
 hulullScript('field-complete.js');
+hulullScript('signed-status.js');
