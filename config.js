@@ -17,3 +17,5 @@ hulullScript('upgrade-init.js');
 hulullScript('hulull-v2.js');
 hulullScript('field-complete.js');
 hulullScript('signed-status.js');
+// فلترة صفحة الموظف تعمل من داخل الصفحة نفسها حتى مع الروابط والنسخ القديمة.
+hulullScript('field-filters-v10.js?v=12');
