@@ -1,0 +1,2 @@
+Force Cloudflare Pages deployment from main branch.
+Build trigger: 2026-09-07 11:39 Asia/Riyadh
