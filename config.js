@@ -14,7 +14,9 @@ const hulullScript = src => document.write('<script src="'+src+'"></'+'script>')
 document.write('<link rel="stylesheet" href="reports.css">');
 document.write('<link rel="stylesheet" href="hulull-v2.css">');
 // V4: طبقة تصميم للشاشة فقط. لا تغيّر أي CSS خاص بالطباعة.
-document.write('<link rel="stylesheet" media="screen" href="hulull-v4-theme.css?v=1">');
+document.write('<link rel="stylesheet" media="screen" href="hulull-v4-theme.css?v=2">');
+// حماية العزل بين صفحة الحجز العامة ولوحة التحكم، خصوصًا على الجوال.
+document.write('<style media="screen">.hidden{display:none!important}@media(max-width:900px){.app-shell.hidden{display:none!important}.auth-shell.hidden,.config-shell.hidden,.booking-public-shell.hidden{display:none!important}}</style>');
 hulullScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
 hulullScript('analytics.js');
 hulullScript('booking-rules.js');
