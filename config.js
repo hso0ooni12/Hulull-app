@@ -13,6 +13,8 @@ if(window.top===window.self && /\/field-v3(?:\.html)?$/i.test(location.pathname)
 const hulullScript = src => document.write('<script src="'+src+'"></'+'script>');
 document.write('<link rel="stylesheet" href="reports.css">');
 document.write('<link rel="stylesheet" href="hulull-v2.css">');
+// V4: طبقة تصميم للشاشة فقط. لا تغيّر أي CSS خاص بالطباعة.
+document.write('<link rel="stylesheet" media="screen" href="hulull-v4-theme.css?v=1">');
 hulullScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
 hulullScript('analytics.js');
 hulullScript('booking-rules.js');
