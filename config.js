@@ -22,6 +22,8 @@ if(!HULULL_PUBLIC_BOOKING){
 document.write('<link rel="stylesheet" media="screen" href="hulull-v4-theme.css?v=3">');
 // حماية العزل بين صفحة الحجز العامة ولوحة التحكم، خصوصًا على الجوال.
 document.write('<style media="screen">.hidden{display:none!important}@media(max-width:900px){.app-shell.hidden{display:none!important}.auth-shell.hidden,.config-shell.hidden,.booking-public-shell.hidden{display:none!important}}'+(HULULL_PUBLIC_BOOKING?'#h2Mobile,.h2-mobile,.mobile-bottom-nav,.hulull-mobile-nav,.sidebar,.topbar{display:none!important}body{padding-bottom:0!important}':'')+'</style>');
+// إصلاح صفحة الطباعة الفارغة في iPhone: إلغاء مساحات واجهة الجوال فقط أثناء الطباعة، بدون تغيير شكل المستند نفسه.
+document.write('<style media="print">body{padding-bottom:0!important}.content{padding-bottom:0!important}#h2Mobile,.h2-mobile,.mobile-bottom-nav,.hulull-mobile-nav{display:none!important}</style>');
 hulullScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
 hulullScript('analytics.js');
 hulullScript('booking-rules.js');
