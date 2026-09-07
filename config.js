@@ -18,8 +18,6 @@ document.write('<link rel="stylesheet" href="reports.css">');
 if(!HULULL_PUBLIC_BOOKING){
   document.write('<link rel="stylesheet" href="hulull-v2.css">');
 }
-// إصلاح طباعة Safari/iPhone: يمنع الصفحة الثانية الفارغة بدون تغيير تصميم السند.
-document.write('<link rel="stylesheet" href="print-single-page-fix.css?v=1">');
 // V4: طبقة تصميم للشاشة فقط. لا تغيّر أي CSS خاص بالطباعة.
 document.write('<link rel="stylesheet" media="screen" href="hulull-v4-theme.css?v=3">');
 // حماية العزل بين صفحة الحجز العامة ولوحة التحكم، خصوصًا على الجوال.
