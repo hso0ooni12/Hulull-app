@@ -4,6 +4,11 @@ window.APP_CONFIG = {
   SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_c5x6A7oaB3TWaTyMVYo_yg_PAwSSJZn'
 };
 
+// رابط صفحة الموظف الرسمي الوحيد هو field.html.
+if(window.top===window.self && /\/field-v3(?:\.html)?$/i.test(location.pathname)){
+  location.replace('field.html');
+}
+
 // تحميل إضافات التقارير والحجز والتطويرات بدون تغيير بيانات السندات الحالية.
 const hulullScript = src => document.write('<script src="'+src+'"></'+'script>');
 document.write('<link rel="stylesheet" href="reports.css">');
