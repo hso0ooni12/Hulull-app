@@ -14,4 +14,11 @@ html{font-size:17px}body{background:var(--v4-bg)!important;color:var(--v4-ink)!i
 }
 @media(max-width:560px){.summary-grid{gap:10px!important}.summary-card{padding:15px!important}.summary-label{font-size:.76rem!important}.summary-value{font-size:1.18rem!important}.card-header{padding:16px!important}.form-grid{grid-template-columns:1fr!important}.span-2{grid-column:auto!important}.mobile-record-card{border-radius:16px!important}.mobile-record-head{gap:8px!important}.mobile-record-meta{grid-template-columns:1fr 1fr!important;gap:8px!important}.mobile-record-actions{gap:6px!important}}
 @media(max-width:390px){.mobile-record-meta{grid-template-columns:1fr!important}.mobile-record-actions{grid-template-columns:repeat(3,minmax(0,1fr))!important}.mobile-action-btn{font-size:.72rem!important}}
+/* Public booking mode must never expose admin/navigation UI. */
+body:has(.booking-public-shell:not(.hidden)) .app-shell,
+body:has(.booking-public-shell:not(.hidden)) .mobile-bottom-nav,
+body:has(.booking-public-shell:not(.hidden)) .hulull-mobile-nav,
+body:has(.booking-public-shell:not(.hidden)) .sidebar,
+body:has(.booking-public-shell:not(.hidden)) .topbar{display:none!important}
+body:has(.booking-public-shell:not(.hidden)){padding-bottom:0!important}
 }
