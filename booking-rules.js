@@ -23,21 +23,30 @@ function bookingError(error){
  return 'تعذر تحميل الأيام المتاحة. اضغط تحديث وحاول مرة أخرى.';
 }
 function patchDateOnlyInsert(){
- if(!window.state?.client||state.client.__dateOnlyPatched)return;
- const originalFrom=state.client.from.bind(state.client);
- state.client.from=function(relation){
+ if(!window.state?.client)return;
+ const client=state.client;
+ if(client.__dateOnlyPatched)return;
+ const originalFrom=client.from.bind(client);
+ client.from=function(relation){
   const builder=originalFrom(relation);
   if(relation==='customer_booking_requests'&&builder&&typeof builder.insert==='function'){
    const originalInsert=builder.insert.bind(builder);
    builder.insert=function(values,options){
-    const patch=v=>v&&typeof v==='object'&&!Array.isArray(v)&&v.status==='pending'?{...v,preferred_time:null}:v;
+    const patch=v=>{
+      if(!v||typeof v!=='object'||Array.isArray(v))return v;
+      if(Object.prototype.hasOwnProperty.call(v,'preferred_time')){
+        const raw=v.preferred_time;
+        if(raw===''||raw==null)return {...v,preferred_time:null};
+      }
+      return v;
+    };
     const next=Array.isArray(values)?values.map(patch):patch(values);
     return originalInsert(next,options);
    };
   }
   return builder;
  };
- state.client.__dateOnlyPatched=true;
+ client.__dateOnlyPatched=true;
 }
 function hideCustomerTimeField(){
  const time=$('customerPreferredTime');if(!time)return;
@@ -46,13 +55,18 @@ function hideCustomerTimeField(){
 }
 function initializeBookingCalendar(){
  patchDateOnlyInsert();hideCustomerTimeField();
+ const form=$('customerBookingForm');
+ if(form&&!form.__dateOnlySubmitGuard){
+   form.addEventListener('submit',()=>{patchDateOnlyInsert();hideCustomerTimeField();},{capture:true});
+   form.__dateOnlySubmitGuard=true;
+ }
  const tomorrow=BookingRules.addDays(BookingRules.today(),1);BookingCalendar.month=tomorrow.slice(0,7)+'-01';
  $('customerPreferredDate').value='';$('customerPreferredDate').min=tomorrow;
  $('bookingMonthPrev').onclick=()=>moveBookingMonth(-1);$('bookingMonthNext').onclick=()=>moveBookingMonth(1);
  $('bookingAvailabilityRetry').onclick=()=>loadBookingAvailability();
  loadBookingAvailability();
  if(BookingCalendar.timer)clearInterval(BookingCalendar.timer);
- BookingCalendar.timer=setInterval(()=>{if(document.visibilityState==='visible'&&!state.bookingSubmitting)loadBookingAvailability()},30000);
+ BookingCalendar.timer=setInterval(()=>{if(document.visibilityState==='visible'&&!state.bookingSubmitting){patchDateOnlyInsert();loadBookingAvailability()}},30000);
 }
 function moveBookingMonth(delta){
  const d=new Date(BookingCalendar.month+'T12:00:00Z');d.setUTCMonth(d.getUTCMonth()+delta);
