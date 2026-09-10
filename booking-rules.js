@@ -23,7 +23,7 @@ function bookingError(error){
  return 'تعذر تحميل الأيام المتاحة. اضغط تحديث وحاول مرة أخرى.';
 }
 function patchDateOnlyInsert(){
- if(!window.state?.client)return;
+ if(typeof state==='undefined'||!state?.client)return;
  const client=state.client;
  if(client.__dateOnlyPatched)return;
  const originalFrom=client.from.bind(client);
@@ -34,11 +34,7 @@ function patchDateOnlyInsert(){
    builder.insert=function(values,options){
     const patch=v=>{
       if(!v||typeof v!=='object'||Array.isArray(v))return v;
-      if(Object.prototype.hasOwnProperty.call(v,'preferred_time')){
-        const raw=v.preferred_time;
-        if(raw===''||raw==null)return {...v,preferred_time:null};
-      }
-      return v;
+      return {...v,preferred_time:null};
     };
     const next=Array.isArray(values)?values.map(patch):patch(values);
     return originalInsert(next,options);
