@@ -26,6 +26,28 @@ function rememberCustomerBookingForEdit(v){
  if(!v||typeof v!=='object'||!v.id||!v.customer_phone)return;
  try{localStorage.setItem('hulull_customer_booking_last',JSON.stringify({id:v.id,phone:v.customer_phone,at:Date.now()}))}catch{}
 }
+function ensureBookingSubmitLoadingUI(){
+ if(document.getElementById('hulullBookingLoadingStyles'))return;
+ const s=document.createElement('style');s.id='hulullBookingLoadingStyles';s.media='screen';s.textContent=`
+ #customerBookingSubmitBtn.hulull-sending{position:relative;overflow:hidden;pointer-events:none;opacity:1!important;background:linear-gradient(135deg,#145b91,#2a8fc0)!important;color:#fff!important}
+ #customerBookingSubmitBtn.hulull-sending:after{content:"";position:absolute;right:0;bottom:0;height:4px;width:38%;background:rgba(255,255,255,.95);border-radius:4px;animation:hulullSendBar 1.05s ease-in-out infinite}
+ #customerBookingSubmitBtn .hulull-send-spinner{width:18px;height:18px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;display:inline-block;animation:hulullSpin .75s linear infinite;flex:0 0 auto}
+ @keyframes hulullSpin{to{transform:rotate(360deg)}}
+ @keyframes hulullSendBar{0%{right:-38%}55%{right:48%}100%{right:105%}}
+ `;document.head.appendChild(s);
+}
+function setBookingSubmitLoading(active){
+ const btn=document.getElementById('customerBookingSubmitBtn');if(!btn)return;
+ ensureBookingSubmitLoadingUI();
+ if(active){
+  if(!btn.dataset.normalHtml)btn.dataset.normalHtml=btn.innerHTML;
+  btn.classList.add('hulull-sending');btn.disabled=true;btn.setAttribute('aria-busy','true');
+  btn.innerHTML='<span class="hulull-send-spinner" aria-hidden="true"></span><span>جاري إرسال الطلب...</span>';
+ }else{
+  btn.classList.remove('hulull-sending');btn.removeAttribute('aria-busy');
+  if(btn.dataset.normalHtml){btn.innerHTML=btn.dataset.normalHtml;delete btn.dataset.normalHtml}
+ }
+}
 function patchDateOnlyInsert(){
  if(typeof state==='undefined'||!state?.client)return;
  const client=state.client;
@@ -43,7 +65,10 @@ function patchDateOnlyInsert(){
       return next;
     };
     const next=Array.isArray(values)?values.map(patch):patch(values);
-    return originalInsert(next,options);
+    setBookingSubmitLoading(true);
+    const result=originalInsert(next,options);
+    if(result&&typeof result.then==='function')result.then(()=>setBookingSubmitLoading(false),()=>setBookingSubmitLoading(false));
+    return result;
    };
   }
   return builder;
@@ -56,7 +81,7 @@ function hideCustomerTimeField(){
  const field=time.closest('.field');if(field)field.style.display='none';
 }
 function initializeBookingCalendar(){
- patchDateOnlyInsert();hideCustomerTimeField();
+ patchDateOnlyInsert();hideCustomerTimeField();ensureBookingSubmitLoadingUI();
  const form=$('customerBookingForm');
  if(form&&!form.__dateOnlySubmitGuard){
    form.addEventListener('submit',()=>{patchDateOnlyInsert();hideCustomerTimeField();},{capture:true});
