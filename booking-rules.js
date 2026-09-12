@@ -22,6 +22,10 @@ function bookingError(error){
  if(typeof friendlyBookingDbError==='function')return friendlyBookingDbError(error);
  return 'تعذر تحميل الأيام المتاحة. اضغط تحديث وحاول مرة أخرى.';
 }
+function rememberCustomerBookingForEdit(v){
+ if(!v||typeof v!=='object'||!v.id||!v.customer_phone)return;
+ try{localStorage.setItem('hulull_customer_booking_last',JSON.stringify({id:v.id,phone:v.customer_phone,at:Date.now()}))}catch{}
+}
 function patchDateOnlyInsert(){
  if(typeof state==='undefined'||!state?.client)return;
  const client=state.client;
@@ -34,7 +38,9 @@ function patchDateOnlyInsert(){
    builder.insert=function(values,options){
     const patch=v=>{
       if(!v||typeof v!=='object'||Array.isArray(v))return v;
-      return {...v,preferred_time:null};
+      const next={...v,preferred_time:null};
+      rememberCustomerBookingForEdit(next);
+      return next;
     };
     const next=Array.isArray(values)?values.map(patch):patch(values);
     return originalInsert(next,options);
@@ -96,19 +102,22 @@ function renderBookingCalendar(){
  const offset=(new Date(BookingCalendar.month+'T12:00:00Z').getUTCDay()+1)%7;
  for(let i=0;i<offset;i++){const spacer=document.createElement('span');grid.append(spacer)}
  for(const day of BookingCalendar.days){
-  const button=document.createElement('button');button.type='button';button.className='booking-day';button.disabled=!day.available||BookingCalendar.loading;
-  const label=day.available?'متاح':day.reason==='full'?'مكتمل':day.reason==='friday'?'إجازة':'غير متاح';
+  const editingOriginal=window.HulullBookingEditState?.active&&window.HulullBookingEditState?.originalDate===day.date;
+  const button=document.createElement('button');button.type='button';button.className='booking-day';button.disabled=(!day.available&&!editingOriginal)||BookingCalendar.loading;
+  const label=editingOriginal&&!day.available?'طلبك الحالي':day.available?'متاح':day.reason==='full'?'مكتمل':day.reason==='friday'?'إجازة':'غير متاح';
   button.textContent=Number(day.date.slice(8))+'\n'+label;button.setAttribute('aria-label',day.date+' '+label);button.setAttribute('aria-pressed',String(day.date===$('customerPreferredDate').value));
   button.onclick=()=>{$('customerPreferredDate').value=day.date;renderBookingCalendar();renderBookingTimes()};grid.append(button);
  }
 }
 function renderBookingTimes(){
  hideCustomerTimeField();
- const date=$('customerPreferredDate').value,day=BookingCalendar.days.find(d=>d.date===date),available=!!day?.available;
+ const date=$('customerPreferredDate').value,day=BookingCalendar.days.find(d=>d.date===date);
+ const editingOriginal=window.HulullBookingEditState?.active&&window.HulullBookingEditState?.originalDate===date;
+ const available=!!day?.available||editingOriginal;
  const formattedDate=typeof formatDate==='function'?formatDate(date):date;
  $('bookingSelectedDate').textContent=date?'اليوم المختار: '+formattedDate:'اختر يوماً متاحاً من التقويم';
  $('customerBookingSubmitBtn').disabled=!available||BookingCalendar.loading||state.bookingSubmitting;
- $('bookingAvailabilityMessage').textContent=available?'اختر اليوم فقط، وسيتواصل معك الموظف لتحديد وقت الزيارة.':date?'اليوم غير متاح؛ اختر يوماً آخر.':'اختر اليوم المناسب لك، وسيتم تحديد وقت الزيارة لاحقًا بالتواصل معك.';
+ $('bookingAvailabilityMessage').textContent=available?(editingOriginal&&!day?.available?'هذا يوم طلبك الحالي ويمكنك الإبقاء عليه، أو اختيار يوم آخر متاح.':'اختر اليوم فقط، وسيتواصل معك الموظف لتحديد وقت الزيارة.'):date?'اليوم غير متاح؛ اختر يوماً آخر.':'اختر اليوم المناسب لك، وسيتم تحديد وقت الزيارة لاحقًا بالتواصل معك.';
 }
 async function assertBookingAvailability(date,time){
  BookingRules.validateDate(date,BookingCalendar.today||BookingRules.today());
