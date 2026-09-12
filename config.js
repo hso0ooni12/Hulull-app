@@ -25,12 +25,12 @@ document.write('<style media="screen">.hidden{display:none!important}@media(max-
 hulullScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
 hulullScript('analytics.js');
 // الحجز باليوم فقط + دعم تعديل العميل لطلبه ما دام Pending.
-hulullScript('booking-rules.js?v=20260912-1');
+hulullScript('booking-rules.js?v=20260912-2');
 hulullScript('free-booking-map.js');
 if(HULULL_PUBLIC_BOOKING){
   hulullScript('booking-customer-edit.js?v=20260912-1');
   // إظهار حالة واضحة أثناء رفع صورة الواجهة وحفظ طلب العميل.
-  hulullScript('booking-submit-loading.js?v=20260912-1');
+  hulullScript('booking-submit-loading.js?v=20260912-2');
 }
 hulullScript('excel-export.js');
 hulullScript('upgrade-init.js');
