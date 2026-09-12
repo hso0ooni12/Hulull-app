@@ -30,8 +30,8 @@
    const s=document.createElement('style');s.id='customerEditStyles';s.media='screen';s.textContent=`
    .booking-edit-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px}
    .booking-edit-btn{background:linear-gradient(135deg,#145b91,#1f7ab8)!important;color:#fff!important;border:0!important}
-   .booking-edit-return{margin-top:18px;padding:15px 16px;border:1px solid #dbe7f1;border-radius:14px;background:#f8fbfe;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-   .booking-edit-return div{display:grid;gap:3px}.booking-edit-return b{font:800 .76rem 'Noto Kufi Arabic',sans-serif;color:#0f172a}.booking-edit-return span{font-size:.82rem;color:#64748b}
+   .booking-edit-return{margin:0 0 18px;padding:14px 16px;border:1px solid #dbe7f1;border-radius:14px;background:#f8fbfe;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+   .booking-edit-return div{display:grid;gap:3px}.booking-edit-return b{font:800 .8rem 'Noto Kufi Arabic',sans-serif;color:#0f172a}.booking-edit-return span{font-size:.84rem;color:#64748b}
    .booking-edit-banner{display:none;margin:0 0 16px;padding:13px 14px;border:1px solid #bfdbfe;border-radius:13px;background:#eff6ff;color:#1e3a8a;font:700 .73rem 'Noto Kufi Arabic',sans-serif;line-height:1.9}
    .booking-edit-banner.show{display:flex;align-items:center;gap:9px}
    .booking-edit-banner i{font-size:1rem}
@@ -58,8 +58,8 @@
 
    if(!byId('bookingEditReturn')){
      const box=document.createElement('div');box.id='bookingEditReturn';box.className='booking-edit-return hidden';
-     box.innerHTML='<div><b>لديك طلب سابق على هذا الجهاز؟</b><span>يمكنك تعديل بياناته ما دام بانتظار المراجعة.</span></div><button id="editSavedBookingBtn" class="btn btn-outline" type="button"><i class="fa-solid fa-pen"></i> تعديل طلبي السابق</button>';
-     form.after(box);byId('editSavedBookingBtn').addEventListener('click',loadSavedBooking);
+     box.innerHTML='<div><b>لديك طلب سابق</b><span>يمكنك تعديل طلبك السابق</span></div><button id="editSavedBookingBtn" class="btn btn-outline" type="button"><i class="fa-solid fa-pen"></i> تعديل الطلب السابق</button>';
+     formPanel.insertBefore(box,form);byId('editSavedBookingBtn').addEventListener('click',loadSavedBooking);
    }
 
    form.addEventListener('submit',handleEditSubmit,true);
