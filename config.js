@@ -24,9 +24,12 @@ document.write('<link rel="stylesheet" media="screen" href="hulull-v4-theme.css?
 document.write('<style media="screen">.hidden{display:none!important}@media(max-width:900px){.app-shell.hidden{display:none!important}.auth-shell.hidden,.config-shell.hidden,.booking-public-shell.hidden{display:none!important}}'+(HULULL_PUBLIC_BOOKING?'#h2Mobile,.h2-mobile,.mobile-bottom-nav,.hulull-mobile-nav,.sidebar,.topbar{display:none!important}body{padding-bottom:0!important}':'')+'</style>');
 hulullScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
 hulullScript('analytics.js');
-// كسر الكاش لإجبار صفحة العميل على منطق الحجز باليوم فقط.
-hulullScript('booking-rules.js?v=20260910-2');
+// الحجز باليوم فقط + دعم تعديل العميل لطلبه ما دام Pending.
+hulullScript('booking-rules.js?v=20260912-1');
 hulullScript('free-booking-map.js');
+if(HULULL_PUBLIC_BOOKING){
+  hulullScript('booking-customer-edit.js?v=20260912-1');
+}
 hulullScript('excel-export.js');
 hulullScript('upgrade-init.js');
 if(!HULULL_PUBLIC_BOOKING){
