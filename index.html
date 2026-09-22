@@ -517,6 +517,7 @@
       <div class="nav-label">القائمة الرئيسية</div>
       <nav class="nav-list" aria-label="التنقل الرئيسي">
         <button class="nav-btn active" data-page="dashboard"><i class="fa-solid fa-chart-pie"></i> لوحة التحكم</button>
+        <button class="nav-btn" data-page="inventory"><i class="fa-solid fa-boxes-stacked"></i> جرد المنتجات</button>
         <button class="nav-btn" data-page="bookings"><i class="fa-solid fa-calendar-check"></i> طلبات العملاء <span id="bookingNavBadge" class="badge" style="margin-right:auto;background:#fff;color:#145b91">0</span></button>
         <button class="nav-btn" data-page="incoming"><i class="fa-solid fa-arrow-trend-down"></i> الوارد - سندات القبض</button>
         <button class="nav-btn" data-page="outgoing"><i class="fa-solid fa-arrow-trend-up"></i> الصادر - سندات الصرف</button>
@@ -545,6 +546,7 @@
       </header>
 
       <div class="content">
+        <section id="page-inventory" class="page"><iframe id="inventoryFrame" title="جرد المنتجات" loading="lazy" src="inventory.html?embedded=1" style="display:block;width:100%;height:max(780px,calc(100vh - 150px));border:0;border-radius:16px;background:#f2f6fb"></iframe></section>
         <section id="page-dashboard" class="page active">
           <div class="page-heading"><div><h2>الملخص المالي</h2><p>الأرقام تتحدث تلقائياً بعد كل عملية وارد أو صادر وتُحفظ في قاعدة البيانات السحابية.</p></div><div id="lastUpdatedText" style="color:var(--muted);font-size:.8rem">—</div></div>
           <div class="mobile-quick-actions">
@@ -794,6 +796,7 @@
 
   const PAGE_META = {
     dashboard: ['لوحة التحكم','ملخص فوري للوارد والصادر والرصيد'],
+    inventory: ['جرد المنتجات','إدارة الأصناف والمخزون وحركة الاستهلاك'],
     bookings: ['طلبات العملاء','إدارة طلبات التمتير والتسعير والمواعيد'],
     incoming: ['سندات القبض','إدارة جميع المبالغ الواردة'],
     outgoing: ['سندات الصرف','إدارة جميع المبالغ الصادرة'],
@@ -1535,6 +1538,7 @@
     document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+page));
     document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
     $('pageTitle').textContent=PAGE_META[page][0];$('pageSubtitle').textContent=PAGE_META[page][1];toggleSidebar(false);document.activeElement?.blur?.();window.scrollTo({top:0,behavior:'smooth'});
+    if(page==='inventory'){const f=$('inventoryFrame');if(f&&f.dataset.opened){f.contentWindow?.location.reload()}else if(f){f.dataset.opened='1'}}
     if(page==='activity')loadAudit().catch(e=>showToast('تعذر تحديث السجل',e.message,'error'));
     if(page==='schedule')renderSchedule();
   }
