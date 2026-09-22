@@ -38,5 +38,4 @@ if(!HULULL_PUBLIC_BOOKING){
   hulullScript('hulull-v2.js');
   hulullScript('field-complete.js');
   hulullScript('signed-status.js');
-  hulullScript('inventory-link.js?v=1');
 }
