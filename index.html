@@ -420,6 +420,7 @@
     }
 
   </style>
+<style media="screen">.voucher-creator-picker{border:1px solid #dce8f3;border-radius:13px;padding:12px 15px;margin-bottom:16px;background:#f8fbff}.voucher-creator-picker legend{font-weight:800;font-size:.82rem;padding:0 8px}.voucher-creator-options{display:flex;gap:12px;flex-wrap:wrap}.voucher-creator-options label{cursor:pointer;flex:1;min-width:115px}.voucher-creator-options input{position:absolute;opacity:0;width:1px;height:1px}.voucher-creator-options span{display:block;text-align:center;border:2px solid #d3e1ef;background:white;border-radius:11px;padding:11px;font-weight:800;transition:.15s}.voucher-creator-options input:checked+span{border-color:#176b9e;background:#e8f5fd;color:#125b89;box-shadow:0 0 0 2px #176b9e22}.voucher-creator-options input:focus-visible+span{outline:3px solid #71b6e8;outline-offset:2px}.voucher-creator-filter{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:13px}.voucher-creator-filter button{border:1px solid #cbd9e7;background:white;border-radius:10px;padding:8px 12px;color:#23506d;font-weight:700;cursor:pointer}.voucher-creator-filter button.active{background:#145b91;border-color:#145b91;color:white}</style>
 </head>
 <body>
   <section id="bookingScreen" class="booking-public-shell hidden">
@@ -588,6 +589,7 @@
                 <div class="entry-type-banner incoming"><i class="fa-solid fa-circle-arrow-down"></i><div><b>مبلغ وارد</b><small>المبلغ المستلم من العميل أو الجهة الدافعة</small></div></div>
                 <div class="voucher-preview"><div class="preview-item"><small>رقم السند</small><b id="incomingPreviewNo">يُنشأ عند الحفظ</b></div><div class="preview-item"><small>الميلادي</small><b id="incomingPreviewDate">—</b></div><div class="preview-item"><small>الهجري</small><b id="incomingPreviewHijri">—</b></div></div>
                 <form id="incomingForm">
+                  <fieldset class="voucher-creator-picker"><legend>تم إنشاء السند بواسطة <span style="color:#b91c1c">*</span></legend><div class="voucher-creator-options"><label><input type="radio" name="incomingCreator" value="موسى" required><span>موسى</span></label><label><input type="radio" name="incomingCreator" value="عبدالله" required><span>عبدالله</span></label></div></fieldset>
                   <div class="form-grid">
                     <div class="field span-2"><label for="incomingParty">استلمنا من السيد / السيدة / الجهة *</label><input id="incomingParty" class="input" required maxlength="200" placeholder="اسم الدافع"></div>
                     <div class="field"><label for="incomingPhone">رقم الجوال</label><input id="incomingPhone" class="input" type="tel" inputmode="tel" maxlength="30" placeholder="رقم جوال الزبون" dir="ltr"></div>
@@ -606,7 +608,7 @@
             </section>
             <section class="card">
               <div class="card-header"><h3 class="card-title"><i class="fa-solid fa-list"></i> سجل سندات القبض <span id="incomingCountBadge" class="badge">0</span></h3><div class="money" id="incomingListTotal">0.00 ر.س</div></div>
-              <div class="card-body" style="padding-bottom:10px"><div class="filters"><div class="filter-field search-filter"><label>بحث</label><input id="incomingSearch" class="input" placeholder="رقم السند، الدافع، رقم الجوال، الوصف..."></div><div class="filter-field"><label>من تاريخ</label><input id="incomingFrom" class="input" type="date"></div><div class="filter-field"><label>إلى تاريخ</label><input id="incomingTo" class="input" type="date"></div><button id="incomingClearFilters" class="btn btn-soft" type="button"><i class="fa-solid fa-filter-circle-xmark"></i></button></div></div>
+              <div class="card-body" style="padding-bottom:10px"><div class="voucher-creator-filter" id="incomingCreatorFilter" aria-label="تصفية السندات حسب المنشئ"><button type="button" class="active" data-creator-filter="all">جميع السندات</button><button type="button" data-creator-filter="موسى">موسى</button><button type="button" data-creator-filter="عبدالله">عبدالله</button></div><div class="filters"><div class="filter-field search-filter"><label>بحث</label><input id="incomingSearch" class="input" placeholder="رقم السند، الدافع، رقم الجوال، الوصف..."></div><div class="filter-field"><label>من تاريخ</label><input id="incomingFrom" class="input" type="date"></div><div class="filter-field"><label>إلى تاريخ</label><input id="incomingTo" class="input" type="date"></div><button id="incomingClearFilters" class="btn btn-soft" type="button"><i class="fa-solid fa-filter-circle-xmark"></i></button></div></div>
               <div class="table-wrap entry-table-wrap"><table><thead><tr><th>#</th><th>رقم السند</th><th>التاريخ</th><th>الدافع</th><th>رقم الجوال</th><th>الموقع</th><th>المبلغ</th><th>الدفع</th><th>إجراءات</th></tr></thead><tbody id="incomingTableBody"></tbody></table><div id="incomingEmpty" class="empty hidden"><i class="fa-solid fa-inbox"></i><b>لا توجد نتائج</b><span>أضف سندًا جديدًا أو غيّر عوامل البحث.</span></div></div>
               <div id="incomingMobileList" class="mobile-record-list"></div>
               <div class="table-footer"><span id="incomingShown">عرض 0 من 0</span><button id="deleteAllIncoming" class="btn btn-danger" type="button"><i class="fa-solid fa-trash-can"></i> حذف كل الوارد</button></div>
@@ -623,6 +625,7 @@
                 <div class="entry-type-banner outgoing"><i class="fa-solid fa-circle-arrow-up"></i><div><b>مبلغ صادر</b><small>المبلغ المدفوع إلى مستفيد أو جهة</small></div></div>
                 <div class="voucher-preview"><div class="preview-item"><small>رقم السند</small><b id="outgoingPreviewNo">يُنشأ عند الحفظ</b></div><div class="preview-item"><small>الميلادي</small><b id="outgoingPreviewDate">—</b></div><div class="preview-item"><small>الهجري</small><b id="outgoingPreviewHijri">—</b></div></div>
                 <form id="outgoingForm">
+                  <fieldset class="voucher-creator-picker"><legend>تم إنشاء السند بواسطة <span style="color:#b91c1c">*</span></legend><div class="voucher-creator-options"><label><input type="radio" name="outgoingCreator" value="موسى" required><span>موسى</span></label><label><input type="radio" name="outgoingCreator" value="عبدالله" required><span>عبدالله</span></label></div></fieldset>
                   <div class="form-grid">
                     <div class="field span-2"><label for="outgoingParty">دفعنا إلى السيد / السيدة / الجهة *</label><input id="outgoingParty" class="input" required maxlength="200" placeholder="اسم المستفيد أو الجهة"></div>
                     <div class="field"><label for="outgoingPayment">طريقة الدفع *</label><select id="outgoingPayment" class="select" required><option value="">-- اختر --</option><option value="cash">نقدي</option><option value="transfer">تحويل بنكي</option><option value="mada">شبكة / مدى</option><option value="cheque">شيك</option><option value="other">أخرى</option></select></div>
@@ -639,7 +642,7 @@
             </section>
             <section class="card">
               <div class="card-header"><h3 class="card-title"><i class="fa-solid fa-list"></i> سجل سندات الصرف <span id="outgoingCountBadge" class="badge">0</span></h3><div class="money" id="outgoingListTotal">0.00 ر.س</div></div>
-              <div class="card-body" style="padding-bottom:10px"><div class="filters"><div class="filter-field search-filter"><label>بحث</label><input id="outgoingSearch" class="input" placeholder="رقم السند، المستفيد، الوصف..."></div><div class="filter-field"><label>من تاريخ</label><input id="outgoingFrom" class="input" type="date"></div><div class="filter-field"><label>إلى تاريخ</label><input id="outgoingTo" class="input" type="date"></div><button id="outgoingClearFilters" class="btn btn-soft" type="button"><i class="fa-solid fa-filter-circle-xmark"></i></button></div></div>
+              <div class="card-body" style="padding-bottom:10px"><div class="voucher-creator-filter" id="outgoingCreatorFilter" aria-label="تصفية السندات حسب المنشئ"><button type="button" class="active" data-creator-filter="all">جميع السندات</button><button type="button" data-creator-filter="موسى">موسى</button><button type="button" data-creator-filter="عبدالله">عبدالله</button></div><div class="filters"><div class="filter-field search-filter"><label>بحث</label><input id="outgoingSearch" class="input" placeholder="رقم السند، المستفيد، الوصف..."></div><div class="filter-field"><label>من تاريخ</label><input id="outgoingFrom" class="input" type="date"></div><div class="filter-field"><label>إلى تاريخ</label><input id="outgoingTo" class="input" type="date"></div><button id="outgoingClearFilters" class="btn btn-soft" type="button"><i class="fa-solid fa-filter-circle-xmark"></i></button></div></div>
               <div class="table-wrap entry-table-wrap"><table><thead><tr><th>#</th><th>رقم السند</th><th>التاريخ</th><th>المستفيد / الجهة</th><th>المبلغ</th><th>الدفع</th><th>إجراءات</th></tr></thead><tbody id="outgoingTableBody"></tbody></table><div id="outgoingEmpty" class="empty hidden"><i class="fa-solid fa-inbox"></i><b>لا توجد نتائج</b><span>أضف سندًا جديدًا أو غيّر عوامل البحث.</span></div></div>
               <div id="outgoingMobileList" class="mobile-record-list"></div>
               <div class="table-footer"><span id="outgoingShown">عرض 0 من 0</span><button id="deleteAllOutgoing" class="btn btn-danger" type="button"><i class="fa-solid fa-trash-can"></i> حذف كل الصادر</button></div>
@@ -912,6 +915,7 @@
     document.querySelectorAll('[data-schedule-view]').forEach(btn=>btn.addEventListener('click',()=>setScheduleView(btn.dataset.scheduleView)));
 
     document.querySelectorAll('[data-page]').forEach(btn=>btn.addEventListener('click',()=>navigate(btn.dataset.page)));
+    document.querySelectorAll('.voucher-creator-filter').forEach(group=>group.addEventListener('click',event=>{const b=event.target.closest('[data-creator-filter]');if(!b)return;group.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));renderEntryTable(group.id.startsWith('incoming')?'incoming':'outgoing')}));
     document.querySelectorAll('[data-goto]').forEach(btn=>btn.addEventListener('click',()=>navigate(btn.dataset.goto)));
     document.querySelectorAll('[data-new]').forEach(btn=>btn.addEventListener('click',()=>{navigate(btn.dataset.new);resetEntryForm(btn.dataset.new);scrollToForm();}));
 
@@ -1148,10 +1152,12 @@
 
   function getFiltered(type){
     const search=$(type+'Search').value.trim().toLowerCase();const from=$(type+'From').value;const to=$(type+'To').value;
+    const creatorFilter=document.querySelector('#'+type+'CreatorFilter button.active')?.dataset.creatorFilter||'all';
     return state.entries.filter(e=>e.entry_type===type).filter(e=>{
+      if(creatorFilter!=='all'&&e.creator_label!==creatorFilter)return false;
       if(from&&e.entry_date<from)return false;if(to&&e.entry_date>to)return false;
       if(!search)return true;
-      const hay=[e.voucher_number,e.party_name,e.reason,e.notes,getPaymentAr(e.payment_method)].join(' ').toLowerCase();
+      const hay=[e.voucher_number,e.party_name,e.reason,e.notes,e.creator_label,getPaymentAr(e.payment_method)].join(' ').toLowerCase();
       if(hay.includes(search))return true;
       if(type==='incoming'){
         const phoneSearch=normalizePhoneDigits(search),phoneValue=normalizePhoneDigits(e.customer_phone);
@@ -1188,7 +1194,7 @@
       const meta=document.createElement('div');meta.className='mobile-record-meta';
       const date=document.createElement('span');date.innerHTML='<i class="fa-regular fa-calendar"></i> ';date.append(document.createTextNode(formatDate(entry.entry_date)));
       const pay=document.createElement('span');pay.innerHTML='<i class="fa-regular fa-credit-card"></i> ';pay.append(document.createTextNode(getPaymentAr(entry.payment_method)));
-      meta.append(date,pay);
+      meta.append(date,pay);if(entry.creator_label){const by=document.createElement('span');by.textContent='بواسطة: '+entry.creator_label;meta.append(by)}
       if(type==='incoming'){
         const phone=document.createElement('span');phone.innerHTML='<i class="fa-solid fa-mobile-screen-button"></i> ';phone.append(document.createTextNode(entry.customer_phone||'—'));
         const location=document.createElement('span');location.innerHTML='<i class="fa-solid fa-location-dot"></i> ';location.append(document.createTextNode(entry.customer_location||'—'));
@@ -1212,7 +1218,7 @@
   function buildEntryRow(entry,index){
     const tr=document.createElement('tr');tr.append(tdText(index));tr.append(tdText(entry.voucher_number,'voucher-no'));
     const dateTd=document.createElement('td');dateTd.append(document.createTextNode(formatDate(entry.entry_date)));const small=document.createElement('small');small.style.cssText='display:block;color:#64748b;margin-top:2px';small.textContent=entry.date_hijri||'';dateTd.append(small);tr.append(dateTd);
-    tr.append(tdText(entry.party_name));
+    const partyCell=tdText(entry.party_name);if(entry.creator_label){const creator=document.createElement('small');creator.style.cssText='display:block;color:#145b91;font-weight:700;margin-top:3px';creator.textContent='بواسطة: '+entry.creator_label;partyCell.append(creator)}tr.append(partyCell);
     if(entry.entry_type==='incoming'){tr.append(tdText(entry.customer_phone||'—'));tr.append(tdText(entry.customer_location||'—'))}
     tr.append(tdText(formatMoney(entry.amount),'money'));tr.append(tdBadge(getPaymentAr(entry.payment_method)));
     const actTd=document.createElement('td');const box=document.createElement('div');box.className='row-actions';
@@ -1228,7 +1234,7 @@
 
   async function saveEntry(type,shouldPrint){
     const form=$(type+'Form');if(!form.reportValidity())return;
-    const payload=readEntryForm(type);const editId=type==='incoming'?state.editIncomingId:state.editOutgoingId;
+    const payload=readEntryForm(type);if(!payload.creator_label){showToast('حدد منشئ السند','اختر موسى أو عبدالله قبل الحفظ','error');return}const editId=type==='incoming'?state.editIncomingId:state.editOutgoingId;
     const mainBtn=$(type+'SaveBtn'),printBtn=$(type+'SavePrintBtn');mainBtn.disabled=true;printBtn.disabled=true;setSync('busy','جاري الحفظ');
     try{
       let query;
@@ -1243,6 +1249,8 @@
     finally{mainBtn.disabled=false;printBtn.disabled=false}
   }
 
+  function formCreatorLabel(type){return document.querySelector('input[name="'+type+'Creator"]:checked')?.value||null}
+
   function readEntryForm(type){
     const date=$(type+'Date').value;return {
       entry_type:type,
@@ -1256,6 +1264,7 @@
       amount_text:$(type+'AmountText').value,
       reason:$(type+'Reason').value.trim(),
       notes:$(type+'Notes').value.trim()||null,
+      creator_label:formCreatorLabel(type),
       ...(type==='incoming'?{
         customer_phone:$('incomingPhone').value.trim()||null,
         customer_location:$('incomingLocation').value.trim()||null
@@ -1268,6 +1277,7 @@
     if(type==='incoming')state.editIncomingId=id;else state.editOutgoingId=id;
     $(type+'FormTitle').innerHTML='';const icon=document.createElement('i');icon.className='fa-solid fa-pen-to-square';$(type+'FormTitle').append(icon,document.createTextNode(' تعديل السند'));
     $(type+'PreviewNo').textContent=e.voucher_number;$(type+'Party').value=e.party_name||'';$(type+'Payment').value=e.payment_method||'';$(type+'Amount').value=e.amount||'';$(type+'Date').value=e.entry_date||todayISO();$(type+'Time').value=(e.entry_time||'').slice(0,5)||currentTime();$(type+'Reason').value=e.reason||'';$(type+'Notes').value=e.notes||'';
+    const creatorChoice=document.querySelector('input[name="'+type+'Creator"][value="'+(e.creator_label||'')+'"]');if(creatorChoice)creatorChoice.checked=true;
     if(type==='incoming'){$('incomingPhone').value=e.customer_phone||'';$('incomingLocation').value=e.customer_location||''}
     syncAmountText(type);syncPreview(type);scrollToForm();showToast('وضع التعديل',`أنت تعدل السند ${e.voucher_number}`)
   }
