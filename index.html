@@ -627,7 +627,7 @@
                 <form id="outgoingForm">
                   <fieldset class="voucher-creator-picker"><legend>تم إنشاء السند بواسطة <span style="color:#b91c1c">*</span></legend><div class="voucher-creator-options"><label><input type="radio" name="outgoingCreator" value="موسى" required><span>موسى</span></label><label><input type="radio" name="outgoingCreator" value="عبدالله" required><span>عبدالله</span></label></div></fieldset>
                   <div class="form-grid">
-                    <div class="field span-2"><label for="outgoingParty">دفعنا إلى السيد / السيدة / الجهة *</label><select id="outgoingPartySelect" class="select" required><option value="">-- اختر المستلم --</option><option value="إبراهيم الدباب">إبراهيم الدباب</option><option value="التأمينات الاجتماعية">التأمينات الاجتماعية</option><option value="التأمينات الاجتماعية + فواتير كهرباء المحلين">التأمينات الاجتماعية + فواتير كهرباء المحلين</option><option value="جينكون">جينكون</option><option value="رواتب عمالنا">رواتب عمالنا</option><option value="شركة إيزوماكس">شركة إيزوماكس</option><option value="شركة بلكيم">شركة بلكيم</option><option value="شركة بيتومات">شركة بيتومات</option><option value="شركة سافيتو فيتونيت">شركة سافيتو فيتونيت</option><option value="شركة كنز">شركة كنز</option><option value="صالح حيدان - سواق الكرين">صالح حيدان - سواق الكرين</option><option value="عبدالعظيم عبداللطيف">عبدالعظيم عبداللطيف</option><option value="عبدالله الدباب">عبدالله الدباب</option><option value="عصام قباني">عصام قباني</option><option value="علي وشهيد">علي وشهيد</option><option value="عمال الدمام">عمال الدمام</option><option value="غرفة الأحساء">غرفة الأحساء</option><option value="فواتير العمال">فواتير العمال</option><option value="قاسم السواق">قاسم السواق</option><option value="مصنع السعودية للعوازل">مصنع السعودية للعوازل</option><option value="موسى الدباب">موسى الدباب</option><option value="وتربروف">وتربروف</option><option value="ياسر حساني قار">ياسر حساني قار</option><option value="__other__">أخرى — إضافة مستلم جديد</option></select><input id="outgoingParty" class="input" required maxlength="200" placeholder="اكتب اسم المستلم الجديد" style="display:none;margin-top:9px" disabled></div>
+                    <div class="field span-2"><label for="outgoingParty">دفعنا إلى السيد / السيدة / الجهة *</label><select id="outgoingPartySelect" class="select" required><option value="">-- اختر المستلم --</option><option value="إبراهيم الدباب">إبراهيم الدباب</option><option value="التأمينات الاجتماعية">التأمينات الاجتماعية</option><option value="التأمينات الاجتماعية + فواتير كهرباء المحلين">التأمينات الاجتماعية + فواتير كهرباء المحلين</option><option value="جينكون">جينكون</option><option value="رواتب عمالنا">رواتب عمالنا</option><option value="شركة إيزوماكس">شركة إيزوماكس</option><option value="شركة بلكيم">شركة بلكيم</option><option value="شركة بيتومات">شركة بيتومات</option><option value="شركة سافيتو فيتونيت">شركة سافيتو فيتونيت</option><option value="شركة كنز">شركة كنز</option><option value="صالح حيدان - سواق الكرين">صالح حيدان - سواق الكرين</option><option value="عبدالعظيم عبداللطيف">عبدالعظيم عبداللطيف</option><option value="عبدالله الدباب">عبدالله الدباب</option><option value="عصام قباني">عصام قباني</option><option value="علي وشهيد">علي وشهيد</option><option value="عمال الدمام">عمال الدمام</option><option value="غرفة الأحساء">غرفة الأحساء</option><option value="فواتير العمال">فواتير العمال</option><option value="قاسم السواق">قاسم السواق</option><option value="مصنع السعودية للعوازل">مصنع السعودية للعوازل</option><option value="موسى الدباب">موسى الدباب</option><option value="وتربروف">وتربروف</option><option value="ياسر حساني قار">ياسر حساني قار</option><option value="__other__">أخرى — إضافة مستلم جديد</option></select><input id="outgoingParty" class="input" required maxlength="200" placeholder="اكتب اسم المستلم الجديد" style="display:none;margin-top:9px" disabled><button type="button" id="manageExpenseRecipientsBtn" class="btn btn-secondary" style="margin-top:9px">إدارة المستلمين وتعديل الأسماء</button><div id="expenseRecipientsManager" hidden style="margin-top:12px;padding:12px;border:1px solid #cbd5e1;border-radius:12px"><strong>تعديل أسماء المستلمين</strong><div id="expenseRecipientsManagerList" style="margin-top:10px;display:grid;gap:8px"></div><button type="button" id="closeExpenseRecipientsManager" class="btn btn-secondary" style="margin-top:12px">إغلاق</button></div></div>
                     <div class="field"><label for="outgoingPayment">طريقة الدفع *</label><select id="outgoingPayment" class="select" required><option value="">-- اختر --</option><option value="cash">نقدي</option><option value="transfer">تحويل بنكي</option><option value="mada">شبكة / مدى</option><option value="cheque">شيك</option><option value="other">أخرى</option></select></div>
                     <div class="field"><label for="outgoingAmount">المبلغ (ر.س) *</label><input id="outgoingAmount" class="input" type="number" min="0.01" step="0.01" required placeholder="0.00" dir="ltr"></div>
                     <div class="field"><label for="outgoingDate">التاريخ الميلادي *</label><input id="outgoingDate" class="input" type="date" required></div>
@@ -1035,7 +1035,7 @@
     setSync('busy','جاري المزامنة');
     if(initial)showLoading('جاري تحميل البيانات السحابية...');
     try{
-      await Promise.all([loadEntries(),loadAudit(),loadScheduleTasks(),loadBookings()]);
+      await Promise.all([loadEntries(),loadAudit(),loadScheduleTasks(),loadBookings(),loadExpenseRecipients()]);
       state.lastLoadedAt=new Date();
       renderAll();
       setSync('ok','متصل بالسحابة');
@@ -1241,6 +1241,7 @@
       if(editId)query=state.client.from('financial_entries').update(payload).eq('id',editId).select().single();
       else query=state.client.from('financial_entries').insert(payload).select().single();
       const {data,error}=await query;if(error)throw error;
+      if(type==='outgoing')await addExpenseRecipientIfNew(payload.party_name);
       await synchronizeNow('mutation');
       showToast(editId?'تم تحديث السند':'تم حفظ السند',`${data.voucher_number} محفوظ ومتزامن سحابياً`);
       if(shouldPrint)printEntryData(data);
@@ -1252,6 +1253,47 @@
   function formCreatorLabel(type){return document.querySelector('input[name="'+type+'Creator"]:checked')?.value||null}
 
   document.getElementById('outgoingPartySelect')?.addEventListener('change',syncOutgoingRecipient);
+  document.getElementById('manageExpenseRecipientsBtn')?.addEventListener('click',async()=>{const box=$('expenseRecipientsManager');box.hidden=!box.hidden;if(!box.hidden)await loadExpenseRecipients();});
+  document.getElementById('closeExpenseRecipientsManager')?.addEventListener('click',()=>{$('expenseRecipientsManager').hidden=true});
+  let expenseRecipientRecords=[];
+  async function loadExpenseRecipients(){
+    if(!state.client||!state.session)return;
+    const {data,error}=await state.client.from('expense_recipients').select('id,name').order('name');
+    if(error){showToast('تعذر تحميل المستلمين',friendlyDbError(error),'error');return}
+    expenseRecipientRecords=data||[];
+    const select=$('outgoingPartySelect'),selected=select.value,custom=$('outgoingParty').value;
+    select.replaceChildren(new Option('-- اختر المستلم --',''));
+    expenseRecipientRecords.forEach(item=>select.add(new Option(item.name,item.name)));
+    select.add(new Option('أخرى — إضافة مستلم جديد','__other__'));
+    select.value=expenseRecipientRecords.some(x=>x.name===selected)?selected:selected==='__other__'?'__other__':'';
+    syncOutgoingRecipient();if(select.value==='__other__')$('outgoingParty').value=custom;
+    renderExpenseRecipientsManager();
+  }
+  function renderExpenseRecipientsManager(){
+    const box=$('expenseRecipientsManagerList');if(!box)return;box.replaceChildren();
+    expenseRecipientRecords.forEach(item=>{
+      const row=document.createElement('div');row.style.cssText='display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap';
+      const label=document.createElement('span');label.textContent=item.name;
+      const edit=document.createElement('button');edit.type='button';edit.className='btn btn-secondary';edit.textContent='تعديل';edit.addEventListener('click',()=>renameExpenseRecipient(item));
+      row.append(label,edit);box.append(row);
+    });
+  }
+  async function renameExpenseRecipient(item){
+    const entered=window.prompt('تعديل اسم المستلم:',item.name);if(entered===null)return;
+    const next=entered.trim();if(!next||next.length>200){showToast('اسم غير صالح','أدخل اسمًا من 1 إلى 200 حرف','error');return}
+    if(next===item.name)return;
+    const {error}=await state.client.from('expense_recipients').update({name:next}).eq('id',item.id);
+    if(error){showToast('تعذر تعديل الاسم',friendlyDbError(error),'error');return}
+    const wasSelected=$('outgoingPartySelect').value===item.name;
+    await loadExpenseRecipients();if(wasSelected)setOutgoingRecipient(next);
+    showToast('تم تعديل المستلم','تم تحديث الاسم في القائمة، والسندات السابقة لم تتغير');
+  }
+  async function addExpenseRecipientIfNew(name){
+    if(!name||expenseRecipientRecords.some(x=>x.name===name))return;
+    const {error}=await state.client.from('expense_recipients').upsert({name},{onConflict:'name',ignoreDuplicates:true});
+    if(error){showToast('السند محفوظ','لكن تعذرت إضافة الاسم لقائمة المستلمين','error');return}
+    await loadExpenseRecipients();
+  }
   function syncOutgoingRecipient(){const choice=$('outgoingPartySelect'),input=$('outgoingParty');if(!choice||!input)return;const other=choice.value==='__other__';input.style.display=other?'block':'none';input.disabled=!other;input.required=other;if(!other)input.value=choice.value;}
   function setOutgoingRecipient(name){const choice=$('outgoingPartySelect');if(!choice)return;const match=Array.from(choice.options).some(o=>o.value===name&&name);choice.value=match?name:name?'__other__':'';syncOutgoingRecipient();$('outgoingParty').value=name||'';}
   function readEntryForm(type){
