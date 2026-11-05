@@ -627,7 +627,7 @@
                 <form id="outgoingForm">
                   <fieldset class="voucher-creator-picker"><legend>تم إنشاء السند بواسطة <span style="color:#b91c1c">*</span></legend><div class="voucher-creator-options"><label><input type="radio" name="outgoingCreator" value="موسى" required><span>موسى</span></label><label><input type="radio" name="outgoingCreator" value="عبدالله" required><span>عبدالله</span></label></div></fieldset>
                   <div class="form-grid">
-                    <div class="field span-2"><label for="outgoingParty">دفعنا إلى السيد / السيدة / الجهة *</label><input id="outgoingParty" class="input" required maxlength="200" placeholder="اسم المستفيد أو الجهة"></div>
+                    <div class="field span-2"><label for="outgoingParty">دفعنا إلى السيد / السيدة / الجهة *</label><select id="outgoingPartySelect" class="select" required><option value="">-- اختر المستلم --</option><option value="إبراهيم الدباب">إبراهيم الدباب</option><option value="التأمينات الاجتماعية">التأمينات الاجتماعية</option><option value="جينكون">جينكون</option><option value="رواتب عمالنا">رواتب عمالنا</option><option value="شركة إيزوماكس">شركة إيزوماكس</option><option value="شركة بلكيم">شركة بلكيم</option><option value="شركة بيتومات">شركة بيتومات</option><option value="شركة سافيتو فيتونيت">شركة سافيتو فيتونيت</option><option value="شركة كنز">شركة كنز</option><option value="صالح حيدان - سواق الكرين">صالح حيدان - سواق الكرين</option><option value="عبدالعظيم عبداللطيف">عبدالعظيم عبداللطيف</option><option value="عبدالله الدباب">عبدالله الدباب</option><option value="عصام قباني">عصام قباني</option><option value="علي وشهيد">علي وشهيد</option><option value="عمال الدمام">عمال الدمام</option><option value="غرفة الأحساء">غرفة الأحساء</option><option value="فواتير العمال">فواتير العمال</option><option value="قاسم السواق">قاسم السواق</option><option value="مصنع السعودية للعوازل">مصنع السعودية للعوازل</option><option value="موسى الدباب">موسى الدباب</option><option value="وتربروف">وتربروف</option><option value="ياسر حساني قار">ياسر حساني قار</option><option value="__other__">أخرى — إضافة مستلم جديد</option></select><input id="outgoingParty" class="input" required maxlength="200" placeholder="اكتب اسم المستلم الجديد" style="display:none;margin-top:9px" disabled></div>
                     <div class="field"><label for="outgoingPayment">طريقة الدفع *</label><select id="outgoingPayment" class="select" required><option value="">-- اختر --</option><option value="cash">نقدي</option><option value="transfer">تحويل بنكي</option><option value="mada">شبكة / مدى</option><option value="cheque">شيك</option><option value="other">أخرى</option></select></div>
                     <div class="field"><label for="outgoingAmount">المبلغ (ر.س) *</label><input id="outgoingAmount" class="input" type="number" min="0.01" step="0.01" required placeholder="0.00" dir="ltr"></div>
                     <div class="field"><label for="outgoingDate">التاريخ الميلادي *</label><input id="outgoingDate" class="input" type="date" required></div>
@@ -1251,6 +1251,9 @@
 
   function formCreatorLabel(type){return document.querySelector('input[name="'+type+'Creator"]:checked')?.value||null}
 
+  document.getElementById('outgoingPartySelect')?.addEventListener('change',syncOutgoingRecipient);
+  function syncOutgoingRecipient(){const choice=$('outgoingPartySelect'),input=$('outgoingParty');if(!choice||!input)return;const other=choice.value==='__other__';input.style.display=other?'block':'none';input.disabled=!other;input.required=other;if(!other)input.value=choice.value;}
+  function setOutgoingRecipient(name){const choice=$('outgoingPartySelect');if(!choice)return;const match=Array.from(choice.options).some(o=>o.value===name&&name);choice.value=match?name:name?'__other__':'';syncOutgoingRecipient();$('outgoingParty').value=name||'';}
   function readEntryForm(type){
     const date=$(type+'Date').value;return {
       entry_type:type,
@@ -1276,14 +1279,14 @@
     const e=state.entries.find(x=>x.id===id);if(!e)return;const type=e.entry_type;navigate(type);
     if(type==='incoming')state.editIncomingId=id;else state.editOutgoingId=id;
     $(type+'FormTitle').innerHTML='';const icon=document.createElement('i');icon.className='fa-solid fa-pen-to-square';$(type+'FormTitle').append(icon,document.createTextNode(' تعديل السند'));
-    $(type+'PreviewNo').textContent=e.voucher_number;$(type+'Party').value=e.party_name||'';$(type+'Payment').value=e.payment_method||'';$(type+'Amount').value=e.amount||'';$(type+'Date').value=e.entry_date||todayISO();$(type+'Time').value=(e.entry_time||'').slice(0,5)||currentTime();$(type+'Reason').value=e.reason||'';$(type+'Notes').value=e.notes||'';
+    $(type+'PreviewNo').textContent=e.voucher_number;if(type==='outgoing')setOutgoingRecipient(e.party_name||'');else $(type+'Party').value=e.party_name||'';$(type+'Payment').value=e.payment_method||'';$(type+'Amount').value=e.amount||'';$(type+'Date').value=e.entry_date||todayISO();$(type+'Time').value=(e.entry_time||'').slice(0,5)||currentTime();$(type+'Reason').value=e.reason||'';$(type+'Notes').value=e.notes||'';
     const creatorChoice=document.querySelector('input[name="'+type+'Creator"][value="'+(e.creator_label||'')+'"]');if(creatorChoice)creatorChoice.checked=true;
     if(type==='incoming'){$('incomingPhone').value=e.customer_phone||'';$('incomingLocation').value=e.customer_location||''}
     syncAmountText(type);syncPreview(type);scrollToForm();showToast('وضع التعديل',`أنت تعدل السند ${e.voucher_number}`)
   }
 
   function resetEntryForm(type){
-    const form=$(type+'Form');if(form)form.reset();if(type==='incoming')state.editIncomingId=null;else state.editOutgoingId=null;
+    const form=$(type+'Form');if(form)form.reset();if(type==='outgoing')setOutgoingRecipient('');if(type==='incoming')state.editIncomingId=null;else state.editOutgoingId=null;
     const date=$(type+'Date'),time=$(type+'Time');if(date)date.value=todayISO();if(time)time.value=currentTime();
     if($(type+'PreviewNo'))$(type+'PreviewNo').textContent='يُنشأ عند الحفظ';
     if($(type+'FormTitle')){$(type+'FormTitle').innerHTML='';const i=document.createElement('i');i.className='fa-solid '+(type==='incoming'?'fa-file-circle-plus':'fa-file-circle-minus');$(type+'FormTitle').append(i,document.createTextNode(type==='incoming'?' سند قبض جديد':' سند صرف جديد'))}
