@@ -1806,6 +1806,7 @@
   const BOOKING_DRAFT_KEY='hulull_public_booking_draft_v1';
   let bookingImagePreviewUrl=null;
   let bookingSubmissionInFlight=false;
+  let bookingSuccessfullySent=false;
   let bookingPendingUpload=null;
   function saudiBookingDate(offset=0){
     const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Riyadh',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
@@ -1824,6 +1825,7 @@
     return Object.fromEntries(ids.map(id=>[id,$(id)?.value||'']));
   }
   function saveBookingDraft(){
+    if(bookingSuccessfullySent)return;
     try{localStorage.setItem(BOOKING_DRAFT_KEY,JSON.stringify({savedAt:Date.now(),fields:bookingDraftSnapshot()}))}catch(e){console.warn('Booking draft unavailable',e)}
   }
   function restoreBookingDraft(){
@@ -1971,6 +1973,7 @@
       $('bookingReference').textContent='REQ-'+pending.id.slice(0,8).toUpperCase();
       $('bookingFormPanel').classList.add('hidden');$('bookingSuccessPanel').classList.remove('hidden');
       bookingPendingUpload=null;
+      bookingSuccessfullySent=true;
       try{localStorage.removeItem(BOOKING_DRAFT_KEY)}catch(e){}
       window.scrollTo({top:0,behavior:'smooth'});
     }catch(error){
@@ -1982,7 +1985,7 @@
   }
 
   function resetCustomerBookingForm(){
-    $('customerBookingForm').reset();bookingPendingUpload=null;try{localStorage.removeItem(BOOKING_DRAFT_KEY)}catch(e){}$('customerPreferredDate').min=saudiBookingDate(1);$('customerPreferredDate').value=saudiBookingDate(1);$('customerFacadePreview').style.display='none';$('customerFacadePreview').removeAttribute('src');$('customerLocationLat').value='';$('customerLocationLng').value='';$('customerLocationText').textContent='اضغط على الخريطة لتثبيت موقع المنزل.';
+    bookingSuccessfullySent=false;$('customerBookingForm').reset();bookingPendingUpload=null;try{localStorage.removeItem(BOOKING_DRAFT_KEY)}catch(e){}$('customerPreferredDate').min=saudiBookingDate(1);$('customerPreferredDate').value=saudiBookingDate(1);$('customerFacadePreview').style.display='none';$('customerFacadePreview').removeAttribute('src');$('customerLocationLat').value='';$('customerLocationLng').value='';$('customerLocationText').textContent='اضغط على الخريطة لتثبيت موقع المنزل.';
     if(customerBookingMarker){customerBookingMap.removeLayer(customerBookingMarker);customerBookingMarker=null}
     $('bookingSuccessPanel').classList.add('hidden');$('bookingFormPanel').classList.remove('hidden');setTimeout(()=>customerBookingMap?.invalidateSize(),100);
   }
