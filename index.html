@@ -1921,7 +1921,7 @@
     const file=$('customerFacadeImage').files?.[0],preview=$('customerFacadePreview');
     if(!file){preview.style.display='none';preview.removeAttribute('src');updateBookingFormValidation();return}
     if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>8*1024*1024){
-      $('customerFacadeImage').value='';preview.style.display='none';showToast('الصورة غير مقبولة','استخدم JPG أو PNG أو WEBP بحجم لا يتجاوز 8 ميجابايت','error');return;
+      $('customerFacadeImage').value='';preview.style.display='none';updateBookingFormValidation();showToast('الصورة غير مقبولة','استخدم JPG أو PNG أو WEBP بحجم لا يتجاوز 8 ميجابايت','error');return;
     }
     preview.src=URL.createObjectURL(file);preview.style.display='block';updateBookingFormValidation();
   }
