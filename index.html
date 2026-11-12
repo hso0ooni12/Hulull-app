@@ -1895,7 +1895,7 @@
         location_lat:lat,location_lng:lng,location_label:$('customerLocationLabel').value.trim()||null,
         facade_image_path:imagePath,customer_notes:$('customerBookingNotes').value.trim()||null,status:'pending'
       };
-      const {error}=await state.client.from('customer_booking_requests').insert(payload);if(error)throw error;
+      const {error}=await state.client.from('customer_booking_requests').upsert(payload,{onConflict:'id',ignoreDuplicates:true});if(error)throw error;
       $('bookingReference').textContent=`REQ-${requestId.slice(0,8).toUpperCase()}`;
       $('bookingFormPanel').classList.add('hidden');$('bookingSuccessPanel').classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'});
     }catch(error){
@@ -2155,6 +2155,7 @@
 
   function friendlyBookingDbError(error){
     const m=String(error?.message||'');
+    if(error?.code==='23505'&&/customer_booking_requests_pkey/.test(m))return 'تم استلام هذا الطلب مسبقًا، ولا تحتاج لإرساله مرة ثانية.';
     if(/BOOKING_DUPLICATE_PENDING|BOOKING_DUPLICATE_ACTIVE/i.test(m))return 'يوجد طلب معاينة سابق على رقم الجوال نفسه ولم يُغلق بعد. لا تحتاج لإرسال الطلب مرة ثانية؛ سيتواصل معك الفريق لتأكيد الموعد.';
     if(/BOOKING_DAY_FULL|BOOKING_SLOT_TAKEN/i.test(m))return 'الموعد المطلوب ممتلئ. اختر يومًا أو وقتًا آخر.';
     if(/BOOKING_DATE_CLOSED/i.test(m))return 'اليوم المختار غير متاح للحجز. اختر تاريخًا قادمًا غير الجمعة.';
