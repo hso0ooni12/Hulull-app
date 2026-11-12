@@ -1868,8 +1868,10 @@
     return local.startsWith('0')?'966'+local.slice(1):local;
   }
 
+  let customerBookingSending=false;
   async function submitCustomerBooking(event){
     event.preventDefault();
+    if(customerBookingSending)return;
     const form=$('customerBookingForm');if(!form.reportValidity())return;
     const phone=normalizeSaudiPhone($('customerBookingPhone').value);
     const lat=Number($('customerLocationLat').value),lng=Number($('customerLocationLng').value);
@@ -1882,6 +1884,7 @@
     const requestId=crypto.randomUUID?crypto.randomUUID():`${Date.now()}-${Math.random().toString(16).slice(2)}`;
     const extension=(image.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';
     const imagePath=`requests/${requestId}.${extension}`;
+    customerBookingSending=true;
     setButtonBusy($('customerBookingSubmitBtn'),true,'جاري إرسال الطلب...');
     try{
       const {error:uploadError}=await state.client.storage.from('booking-facades').upload(imagePath,image,{contentType:image.type,upsert:false,cacheControl:'3600'});
@@ -1897,7 +1900,7 @@
       $('bookingFormPanel').classList.add('hidden');$('bookingSuccessPanel').classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'});
     }catch(error){
       console.error('Customer booking error:',error);showToast('تعذر إرسال الطلب',friendlyBookingDbError(error),'error');
-    }finally{setButtonBusy($('customerBookingSubmitBtn'),false)}
+    }finally{customerBookingSending=false;setButtonBusy($('customerBookingSubmitBtn'),false)}
   }
 
   function resetCustomerBookingForm(){
@@ -2152,8 +2155,12 @@
 
   function friendlyBookingDbError(error){
     const m=String(error?.message||'');
-    if(/customer_booking_requests|booking-facades|relation .* does not exist|Bucket not found/i.test(m))return 'إعداد طلبات العملاء غير مكتمل. شغّل ملف supabase_booking_setup.sql مرة واحدة في Supabase';
-    if(/row-level security|permission denied/i.test(m))return 'صلاحيات قاعدة البيانات أو رفع الصور غير مفعلة. شغّل ملف supabase_booking_setup.sql';
+    if(/BOOKING_DUPLICATE_PENDING|BOOKING_DUPLICATE_ACTIVE/i.test(m))return 'يوجد طلب معاينة سابق على رقم الجوال نفسه ولم يُغلق بعد. لا تحتاج لإرسال الطلب مرة ثانية؛ سيتواصل معك الفريق لتأكيد الموعد.';
+    if(/BOOKING_DAY_FULL|BOOKING_SLOT_TAKEN/i.test(m))return 'الموعد المطلوب ممتلئ. اختر يومًا أو وقتًا آخر.';
+    if(/BOOKING_DATE_CLOSED/i.test(m))return 'اليوم المختار غير متاح للحجز. اختر تاريخًا قادمًا غير الجمعة.';
+    if(/BOOKING_TIME_CLOSED/i.test(m))return 'الوقت المختار غير متاح. اختر ساعة كاملة بين 9 صباحًا و4 عصرًا.';
+    if(/42P01|relation [^ ]+ does not exist|Bucket not found|storage bucket not found/i.test(m))return 'إعداد طلبات العملاء غير مكتمل. تواصل مع إدارة الموقع.';
+    if(/row-level security|permission denied/i.test(m))return 'تعذر حفظ الطلب بسبب صلاحيات الوصول. تواصل مع إدارة الموقع.';
     if(/payload too large|maximum allowed size/i.test(m))return 'حجم الصورة أكبر من الحد المسموح';
     if(/Failed to fetch|NetworkError/i.test(m))return 'تعذر الوصول إلى الخادم. تحقق من اتصال الإنترنت';
     return m||'حدث خطأ غير متوقع أثناء معالجة الطلب';
