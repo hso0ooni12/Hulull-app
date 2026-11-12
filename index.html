@@ -421,35 +421,7 @@
 
   </style>
 <style media="screen">.voucher-creator-picker{border:1px solid #dce8f3;border-radius:13px;padding:12px 15px;margin-bottom:16px;background:#f8fbff}.voucher-creator-picker legend{font-weight:800;font-size:.82rem;padding:0 8px}.voucher-creator-options{display:flex;gap:12px;flex-wrap:wrap}.voucher-creator-options label{cursor:pointer;flex:1;min-width:115px}.voucher-creator-options input{position:absolute;opacity:0;width:1px;height:1px}.voucher-creator-options span{display:block;text-align:center;border:2px solid #d3e1ef;background:white;border-radius:11px;padding:11px;font-weight:800;transition:.15s}.voucher-creator-options input:checked+span{border-color:#176b9e;background:#e8f5fd;color:#125b89;box-shadow:0 0 0 2px #176b9e22}.voucher-creator-options input:focus-visible+span{outline:3px solid #71b6e8;outline-offset:2px}.voucher-creator-filter{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:13px}.voucher-creator-filter button{border:1px solid #cbd9e7;background:white;border-radius:10px;padding:8px 12px;color:#23506d;font-weight:700;cursor:pointer}.voucher-creator-filter button.active{background:#145b91;border-color:#145b91;color:white}</style>
-<style>
-/* Public booking journey — isolated from admin and printing */
-#bookingScreen{font-family:'Noto Kufi Arabic',sans-serif;background:linear-gradient(160deg,#f0f7fd 0%,#f8fafc 55%,#edf5fb 100%)}
-#bookingScreen .booking-public-wrap{max-width:760px}
-#bookingScreen .booking-public-card{border-radius:24px;overflow:hidden;box-shadow:0 22px 65px rgba(15,52,85,.10)}
-#bookingScreen .booking-public-intro{background:linear-gradient(120deg,#0e4976,#1974aa);color:white;padding:26px}
-#bookingScreen .booking-public-intro h2,#bookingScreen .booking-public-intro p{color:white}
-#bookingScreen .booking-public-body{padding:clamp(16px,4vw,32px)}
-#bookingScreen .booking-stepper{display:flex;gap:8px;margin:0 0 26px}
-#bookingScreen .booking-step-indicator{flex:1;text-align:center;font-size:12px;color:#64748b}
-#bookingScreen .booking-step-indicator:before{content:'';display:block;height:5px;border-radius:20px;background:#dbe5ee;margin-bottom:9px}
-#bookingScreen .booking-step-indicator.active:before,#bookingScreen .booking-step-indicator.done:before{background:#1974aa}
-#bookingScreen .booking-step-indicator.active{color:#145b91;font-weight:800}
-#bookingScreen .booking-step-panel[hidden],#bookingScreen .booking-step-actions[hidden],#bookingScreen .form-actions[hidden]{display:none!important}
-#bookingScreen .booking-step-heading{font-size:1.1rem;color:#123d5e;margin:0 0 8px}
-#bookingScreen .booking-step-subtitle{font-size:.8rem;color:#64748b;margin-bottom:20px;line-height:1.9}
-#bookingScreen .booking-step-panel .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
-#bookingScreen .booking-step-panel .field.span-2{grid-column:1/-1}
-#bookingScreen .booking-step-actions{display:flex;gap:10px;margin-top:25px}
-#bookingScreen .booking-step-actions .btn{flex:1;min-height:49px}
-#bookingScreen .booking-service-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:8px 0 18px}
-#bookingScreen .booking-service-choices label{border:1px solid #cbd5e1;border-radius:13px;padding:12px 8px;text-align:center;cursor:pointer;background:#fff;font-size:.78rem}
-#bookingScreen .booking-service-choices label:has(input:checked){border-color:#1974aa;background:#eaf4fb;color:#145b91;font-weight:800}
-#bookingScreen .booking-service-choices input{accent-color:#1974aa}
-#bookingScreen .booking-map{min-height:290px;border-radius:14px;overflow:hidden}
-#bookingScreen .upload-drop{border-radius:14px}
-#bookingScreen .booking-trust-note{text-align:center;font-size:11px;color:#64748b;margin-top:18px}
-@media(max-width:540px){#bookingScreen .booking-step-panel .form-grid{grid-template-columns:1fr}#bookingScreen .booking-service-choices{grid-template-columns:1fr}#bookingScreen .booking-public-intro{padding:20px}#bookingScreen .booking-step-actions{position:sticky;bottom:0;background:#fff;padding:10px 0;z-index:400}}
-</style>
+
 </head>
 <body>
   <section id="bookingScreen" class="booking-public-shell hidden">
@@ -1831,63 +1803,8 @@
   }
 
 
-  let bookingJourneyStep=0;
-  function setupBookingJourney(){
-    const form=$('customerBookingForm');if(!form||form.dataset.journeyReady)return;
-    form.dataset.journeyReady='1';form.noValidate=true;
-    const originalGrid=form.querySelector(':scope > .form-grid');
-    const actions=form.querySelector(':scope > .form-actions');
-    if(!originalGrid||!actions)return;
-    const stepper=document.createElement('div');stepper.className='booking-stepper';
-    ['بياناتك','الموقع والصورة','الموعد والتأكيد'].forEach((label,i)=>{
-      const item=document.createElement('div');item.className='booking-step-indicator';item.textContent=(i+1)+' · '+label;stepper.append(item);
-    });
-    form.insertBefore(stepper,originalGrid);
-    const panels=[];
-    for(let i=0;i<3;i++){
-      const panel=document.createElement('section');panel.className='booking-step-panel';
-      const heading=document.createElement('h3');heading.className='booking-step-heading';heading.textContent=['خلّنا نتعرف عليك','وين موقع المنزل؟','اختر موعد المعاينة'][i];
-      const subtitle=document.createElement('p');subtitle.className='booking-step-subtitle';subtitle.textContent=['بيانات بسيطة حتى نتواصل معك لتأكيد المعاينة.','حدد موقع المنزل وأرفق صورة واضحة للواجهة.','حدد الوقت المناسب لك، والموعد يخضع لتأكيد فريقنا.'][i];
-      const grid=document.createElement('div');grid.className='form-grid';panel.append(heading,subtitle,grid);form.insertBefore(panel,actions);panels.push(panel);
-    }
-    const place=(id,step)=>{const field=$(id)?.closest('.field');if(field)panels[step].querySelector('.form-grid').append(field)};
-    ['customerBookingName','customerBookingPhone'].forEach(id=>place(id,0));
-    ['customerLocationLabel','customerLocationLat','customerFacadeImage'].forEach(id=>place(id,1));
-    ['customerPreferredDate','customerPreferredTime','customerBookingNotes'].forEach(id=>place(id,2));
-    originalGrid.remove();
-    const services=document.createElement('div');services.className='field span-2';
-    services.innerHTML='<label>نوع الخدمة المطلوبة</label><div class="booking-service-choices"><label><input type="radio" name="bookingService" value="عزل أسطح"> عزل أسطح</label><label><input type="radio" name="bookingService" value="عزل مائي"> عزل مائي</label><label><input type="radio" name="bookingService" value="غير متأكد" checked> غير متأكد</label></div>';
-    panels[0].querySelector('.form-grid').append(services);
-    const nav=document.createElement('div');nav.className='booking-step-actions';
-    const back=document.createElement('button');back.type='button';back.className='btn btn-outline';back.textContent='السابق';
-    const next=document.createElement('button');next.type='button';next.className='btn btn-primary';next.textContent='التالي';
-    nav.append(back,next);form.insertBefore(nav,actions);
-    const trust=document.createElement('p');trust.className='booking-trust-note';trust.textContent='تُستخدم بياناتك فقط لمعالجة طلب المعاينة والتواصل معك.';form.append(trust);
-    const validate=(step)=>{
-      const required=step===0?['customerBookingName','customerBookingPhone']:step===1?['customerFacadeImage']:['customerPreferredDate','customerPreferredTime'];
-      for(const id of required){const el=$(id);if(!el.checkValidity()){el.reportValidity();return false}}
-      if(step===0&&!/^05\\d{8}$/.test(normalizeSaudiPhone($('customerBookingPhone').value))){showToast('رقم الجوال غير صحيح','أدخل رقم جوال سعودي بصيغة 05xxxxxxxx','error');$('customerBookingPhone').focus();return false}
-      if(step===1&&(!$('customerLocationLat').value||!$('customerLocationLng').value)){showToast('حدد موقع المنزل','اضغط على الخريطة أو استخدم موقعك الحالي','error');return false}
-      return true;
-    };
-    const go=(step)=>{
-      bookingJourneyStep=Math.max(0,Math.min(2,step));
-      panels.forEach((p,i)=>p.hidden=i!==bookingJourneyStep);
-      [...stepper.children].forEach((item,i)=>item.className='booking-step-indicator'+(i===bookingJourneyStep?' active':i<bookingJourneyStep?' done':''));
-      back.hidden=bookingJourneyStep===0;next.hidden=bookingJourneyStep===2;actions.hidden=bookingJourneyStep!==2;
-      setTimeout(()=>customerBookingMap?.invalidateSize(),120);
-      stepper.scrollIntoView({behavior:'smooth',block:'start'});
-    };
-    back.addEventListener('click',()=>go(bookingJourneyStep-1));
-    next.addEventListener('click',()=>{if(validate(bookingJourneyStep))go(bookingJourneyStep+1)});
-    form.addEventListener('submit',event=>{for(let i=0;i<3;i++){go(i);if(!validate(i)){event.preventDefault();event.stopImmediatePropagation();return}}go(2)},true);
-    window.resetBookingJourney=()=>go(0);
-    go(0);
-  }
-
   function initializeCustomerBookingPortal(){
     document.title='حجز موعد | حلول المنازل للعوازل';
-    setupBookingJourney();
     $('customerPreferredDate').min=todayISO();
     if(!$('customerPreferredDate').value)$('customerPreferredDate').value=todayISO();
     setTimeout(initCustomerBookingMap,80);
@@ -1953,7 +1870,7 @@
 
   async function submitCustomerBooking(event){
     event.preventDefault();
-    const form=$('customerBookingForm');if(!form.dataset.journeyReady&&!form.reportValidity())return;
+    const form=$('customerBookingForm');if(!form.reportValidity())return;
     const phone=normalizeSaudiPhone($('customerBookingPhone').value);
     const lat=Number($('customerLocationLat').value),lng=Number($('customerLocationLng').value);
     const image=$('customerFacadeImage').files?.[0];
@@ -1973,7 +1890,7 @@
         id:requestId,customer_name:$('customerBookingName').value.trim(),customer_phone:phone,
         preferred_date:$('customerPreferredDate').value,preferred_time:$('customerPreferredTime').value,
         location_lat:lat,location_lng:lng,location_label:$('customerLocationLabel').value.trim()||null,
-        facade_image_path:imagePath,customer_notes:([document.querySelector('input[name="bookingService"]:checked')?.value?'نوع الخدمة: '+document.querySelector('input[name="bookingService"]:checked').value:'',$('customerBookingNotes').value.trim()].filter(Boolean).join(' | '))||null,status:'pending'
+        facade_image_path:imagePath,customer_notes:$('customerBookingNotes').value.trim()||null,status:'pending'
       };
       const {error}=await state.client.from('customer_booking_requests').insert(payload);if(error)throw error;
       $('bookingReference').textContent=`REQ-${requestId.slice(0,8).toUpperCase()}`;
@@ -1984,7 +1901,7 @@
   }
 
   function resetCustomerBookingForm(){
-    $('customerBookingForm').reset();window.resetBookingJourney?.();$('customerPreferredDate').value=todayISO();$('customerFacadePreview').style.display='none';$('customerFacadePreview').removeAttribute('src');$('customerLocationLat').value='';$('customerLocationLng').value='';$('customerLocationText').textContent='اضغط على الخريطة لتثبيت موقع المنزل.';
+    $('customerBookingForm').reset();$('customerPreferredDate').value=todayISO();$('customerFacadePreview').style.display='none';$('customerFacadePreview').removeAttribute('src');$('customerLocationLat').value='';$('customerLocationLng').value='';$('customerLocationText').textContent='اضغط على الخريطة لتثبيت موقع المنزل.';
     if(customerBookingMarker){customerBookingMap.removeLayer(customerBookingMarker);customerBookingMarker=null}
     $('bookingSuccessPanel').classList.add('hidden');$('bookingFormPanel').classList.remove('hidden');setTimeout(()=>customerBookingMap?.invalidateSize(),100);
   }
