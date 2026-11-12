@@ -1803,10 +1803,80 @@
   }
 
 
+  function bookingSaudiToday(){
+    const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Riyadh',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+    const p=Object.fromEntries(parts.map(x=>[x.type,x.value]));
+    return p.year+'-'+p.month+'-'+p.day;
+  }
+  function bookingInputProblem(id){
+    const el=$(id),v=el.value.trim();
+    if(id==='customerBookingName')return v.length<2?'اكتب الاسم (حرفين على الأقل).':'';
+    if(id==='customerBookingPhone')return !/^05\\d{8}$/.test(normalizeSaudiPhone(v))?'أدخل رقم جوال سعودي صحيح.':'';
+    if(id==='customerPreferredDate'){
+      if(!v)return 'اختر تاريخ المعاينة.';
+      const date=new Date(v+'T12:00:00Z');
+      return v<=bookingSaudiToday()||Number.isNaN(date.getTime())||date.getUTCDay()===5?'اختر تاريخًا قادمًا غير يوم الجمعة.':'';
+    }
+    if(id==='customerPreferredTime')return !/^(09|10|11|12|13|14|15|16):00$/.test(v)?'اختر ساعة كاملة بين 9 صباحًا و4 عصرًا.':'';
+    if(id==='customerLocationLat'){
+      const a=$('customerLocationLat').value,b=$('customerLocationLng').value;
+      return !a||!b||!Number.isFinite(+a)||!Number.isFinite(+b)||Math.abs(+a)>90||Math.abs(+b)>180?'حدد موقع المنزل من الخريطة.':'';
+    }
+    if(id==='customerFacadeImage'){
+      const file=el.files?.[0];
+      return !file?'أرفق صورة واجهة المنزل.':!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>8*1024*1024?'الصورة يجب أن تكون JPG أو PNG أو WEBP وأقل من 8 ميجابايت.':'';
+    }
+    return '';
+  }
+  const bookingValidationIds=['customerBookingName','customerBookingPhone','customerPreferredDate','customerPreferredTime','customerLocationLat','customerFacadeImage'];
+  function updateBookingFormValidation(){
+    const form=$('customerBookingForm');if(!form)return false;
+    let firstProblem=null;
+    for(const id of bookingValidationIds){
+      const message=bookingInputProblem(id),el=$(id);
+      const target=id==='customerLocationLat'?$('customerLocationMap'):id==='customerFacadeImage'?el.closest('.upload-drop'):el;
+      let hint=document.getElementById('booking-validation-'+id);
+      if(!hint){
+        hint=document.createElement('small');hint.id='booking-validation-'+id;
+        hint.style.cssText='display:none;color:#b42318;font-size:12px;margin-top:5px;line-height:1.8';
+        target.insertAdjacentElement('afterend',hint);
+      }
+      hint.textContent=message;
+      const show=Boolean(message)&&el.dataset.bookingTouched==='1';
+      hint.style.display=show?'block':'none';
+      if(target!==el)target.style.borderColor=show?'#b42318':'';
+      else el.style.borderColor=show?'#b42318':'';
+      if(message&&!firstProblem)firstProblem={id,message};
+    }
+    const submit=$('customerBookingSubmitBtn');
+    if(!customerBookingSending){
+      submit.disabled=Boolean(firstProblem);
+      submit.title=firstProblem?.message||'';
+      submit.setAttribute('aria-disabled',String(Boolean(firstProblem)));
+    }
+    return !firstProblem;
+  }
+  function initializeBookingLiveValidation(){
+    for(const id of bookingValidationIds){
+      const el=$(id);
+      if(id!=='customerLocationLat'){
+        el.addEventListener('input',()=>{el.dataset.bookingTouched='1';updateBookingFormValidation()});
+        el.addEventListener('change',()=>{el.dataset.bookingTouched='1';updateBookingFormValidation()});
+        el.addEventListener('blur',()=>{el.dataset.bookingTouched='1';updateBookingFormValidation()});
+      }
+    }
+    const form=$('customerBookingForm');
+    form.addEventListener('submit',()=>{
+      bookingValidationIds.forEach(id=>$(id).dataset.bookingTouched='1');
+      updateBookingFormValidation();
+    },true);
+    updateBookingFormValidation();
+  }
   function initializeCustomerBookingPortal(){
     document.title='حجز موعد | حلول المنازل للعوازل';
-    $('customerPreferredDate').min=todayISO();
-    if(!$('customerPreferredDate').value)$('customerPreferredDate').value=todayISO();
+    $('customerPreferredDate').min=bookingSaudiToday();
+    if(!$('customerPreferredDate').value)$('customerPreferredDate').value=bookingSaudiToday();
+    initializeBookingLiveValidation();
     setTimeout(initCustomerBookingMap,80);
   }
 
@@ -1833,6 +1903,7 @@
     else customerBookingMarker.setLatLng([lat,lng]);
     customerBookingMarker.off('dragend').on('dragend',e=>{const point=e.target.getLatLng();setCustomerBookingLocation(point.lat,point.lng,false)});
     if(center)customerBookingMap.setView([lat,lng],16);
+    $('customerLocationLat').dataset.bookingTouched='1';updateBookingFormValidation();
   }
 
   function useCustomerCurrentLocation(){
@@ -1848,11 +1919,11 @@
 
   function previewCustomerFacadeImage(){
     const file=$('customerFacadeImage').files?.[0],preview=$('customerFacadePreview');
-    if(!file){preview.style.display='none';preview.removeAttribute('src');return}
+    if(!file){preview.style.display='none';preview.removeAttribute('src');updateBookingFormValidation();return}
     if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>8*1024*1024){
       $('customerFacadeImage').value='';preview.style.display='none';showToast('الصورة غير مقبولة','استخدم JPG أو PNG أو WEBP بحجم لا يتجاوز 8 ميجابايت','error');return;
     }
-    preview.src=URL.createObjectURL(file);preview.style.display='block';
+    preview.src=URL.createObjectURL(file);preview.style.display='block';updateBookingFormValidation();
   }
 
   function normalizeSaudiPhone(value){
@@ -1872,7 +1943,9 @@
   async function submitCustomerBooking(event){
     event.preventDefault();
     if(customerBookingSending)return;
-    const form=$('customerBookingForm');if(!form.reportValidity())return;
+    const form=$('customerBookingForm');
+    bookingValidationIds.forEach(id=>$(id).dataset.bookingTouched='1');
+    if(!updateBookingFormValidation()||!form.reportValidity())return;
     const phone=normalizeSaudiPhone($('customerBookingPhone').value);
     const lat=Number($('customerLocationLat').value),lng=Number($('customerLocationLng').value);
     const image=$('customerFacadeImage').files?.[0];
@@ -1904,7 +1977,7 @@
   }
 
   function resetCustomerBookingForm(){
-    $('customerBookingForm').reset();$('customerPreferredDate').value=todayISO();$('customerFacadePreview').style.display='none';$('customerFacadePreview').removeAttribute('src');$('customerLocationLat').value='';$('customerLocationLng').value='';$('customerLocationText').textContent='اضغط على الخريطة لتثبيت موقع المنزل.';
+    $('customerBookingForm').reset();$('customerPreferredDate').value=bookingSaudiToday();bookingValidationIds.forEach(id=>$(id).dataset.bookingTouched='0');updateBookingFormValidation();$('customerFacadePreview').style.display='none';$('customerFacadePreview').removeAttribute('src');$('customerLocationLat').value='';$('customerLocationLng').value='';$('customerLocationText').textContent='اضغط على الخريطة لتثبيت موقع المنزل.';
     if(customerBookingMarker){customerBookingMap.removeLayer(customerBookingMarker);customerBookingMarker=null}
     $('bookingSuccessPanel').classList.add('hidden');$('bookingFormPanel').classList.remove('hidden');setTimeout(()=>customerBookingMap?.invalidateSize(),100);
   }
