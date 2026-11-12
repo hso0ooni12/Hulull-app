@@ -434,7 +434,7 @@
 #bookingScreen .booking-step-indicator:before{content:'';display:block;height:5px;border-radius:20px;background:#dbe5ee;margin-bottom:9px}
 #bookingScreen .booking-step-indicator.active:before,#bookingScreen .booking-step-indicator.done:before{background:#1974aa}
 #bookingScreen .booking-step-indicator.active{color:#145b91;font-weight:800}
-#bookingScreen .booking-step-panel[hidden]{display:none!important}
+#bookingScreen .booking-step-panel[hidden],#bookingScreen .booking-step-actions[hidden],#bookingScreen .form-actions[hidden]{display:none!important}
 #bookingScreen .booking-step-heading{font-size:1.1rem;color:#123d5e;margin:0 0 8px}
 #bookingScreen .booking-step-subtitle{font-size:.8rem;color:#64748b;margin-bottom:20px;line-height:1.9}
 #bookingScreen .booking-step-panel .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
@@ -1834,7 +1834,7 @@
   let bookingJourneyStep=0;
   function setupBookingJourney(){
     const form=$('customerBookingForm');if(!form||form.dataset.journeyReady)return;
-    form.dataset.journeyReady='1';
+    form.dataset.journeyReady='1';form.noValidate=true;
     const originalGrid=form.querySelector(':scope > .form-grid');
     const actions=form.querySelector(':scope > .form-actions');
     if(!originalGrid||!actions)return;
@@ -1953,7 +1953,7 @@
 
   async function submitCustomerBooking(event){
     event.preventDefault();
-    const form=$('customerBookingForm');if(!form.reportValidity())return;
+    const form=$('customerBookingForm');if(!form.dataset.journeyReady&&!form.reportValidity())return;
     const phone=normalizeSaudiPhone($('customerBookingPhone').value);
     const lat=Number($('customerLocationLat').value),lng=Number($('customerLocationLng').value);
     const image=$('customerFacadeImage').files?.[0];
