@@ -2150,7 +2150,10 @@
 
   function friendlyBookingDbError(error){
     const m=String(error?.message||'');
-    if(/customer_booking_requests|booking-facades|relation .* does not exist|Bucket not found/i.test(m))return 'إعداد طلبات العملاء غير مكتمل. شغّل ملف supabase_booking_setup.sql مرة واحدة في Supabase';
+    if(/BOOKING_DUPLICATE_PENDING|BOOKING_DUPLICATE_ACTIVE/i.test(m))return 'يوجد طلب سابق على رقم الجوال نفسه. تحقق من وصوله للإدارة قبل إعادة الإرسال.';
+    if(/23505|duplicate key value|customer_booking_requests_pkey/i.test(m))return 'هذا الطلب مسجل مسبقًا. تحقق من ظهوره في لوحة الإدارة ولا تعِد إرساله.';
+    if(/BOOKING_DAY_FULL|BOOKING_SLOT_TAKEN|BOOKING_DATE_CLOSED|BOOKING_TIME_CLOSED/i.test(m))return 'الموعد المطلوب غير متاح. اختر موعدًا آخر.';
+    if(/42P01|relation .* does not exist|Bucket not found/i.test(m))return 'تعذر العثور على إعدادات الحجز في الخادم. تواصل مع إدارة الموقع.';
     if(/row-level security|permission denied/i.test(m))return 'صلاحيات قاعدة البيانات أو رفع الصور غير مفعلة. شغّل ملف supabase_booking_setup.sql';
     if(/payload too large|maximum allowed size/i.test(m))return 'حجم الصورة أكبر من الحد المسموح';
     if(/Failed to fetch|NetworkError/i.test(m))return 'تعذر الوصول إلى الخادم. تحقق من اتصال الإنترنت';
