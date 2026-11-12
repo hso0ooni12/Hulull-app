@@ -1985,11 +1985,12 @@
     customerBookingSending=true;
     setButtonBusy($('customerBookingSubmitBtn'),true,'جاري إرسال الطلب...');
     try{
-      const optimized=await bookingWithTimeout(prepareBookingFacade(image),15000);
+      const optimized=await bookingWithTimeout(prepareBookingFacade(image),8000);
+      if(!navigator.onLine)throw new Error('BOOKING_OFFLINE');
       const extension=optimized.type==='image/jpeg'?'jpg':optimized.type==='image/png'?'png':'webp';
       const imagePath=`requests/${requestId}.${extension}`;
       if(!attempt.uploaded){
-        const {error:uploadError}=await bookingWithTimeout(state.client.storage.from('booking-facades').upload(imagePath,optimized,{contentType:optimized.type,upsert:false,cacheControl:'3600'}),30000);
+        const {error:uploadError}=await bookingWithTimeout(state.client.storage.from('booking-facades').upload(imagePath,optimized,{contentType:optimized.type,upsert:false,cacheControl:'3600'}),15000);
         if(uploadError&&!(uploadError.statusCode==='409'||/already exists|duplicate/i.test(uploadError.message||'')))throw uploadError;
         attempt.uploaded=true;
       }
@@ -1999,12 +2000,12 @@
         location_lat:lat,location_lng:lng,location_label:$('customerLocationLabel').value.trim()||null,
         facade_image_path:imagePath,customer_notes:$('customerBookingNotes').value.trim()||null,status:'pending'
       };
-      const {error}=await bookingWithTimeout(state.client.from('customer_booking_requests').upsert(payload,{onConflict:'id',ignoreDuplicates:true}),20000);if(error)throw error;
+      const {error}=await bookingWithTimeout(state.client.from('customer_booking_requests').upsert(payload,{onConflict:'id',ignoreDuplicates:true}),12000);if(error)throw error;
       customerBookingAttempt=null;
       $('bookingReference').textContent=`REQ-${requestId.slice(0,8).toUpperCase()}`;
       $('bookingFormPanel').classList.add('hidden');$('bookingSuccessPanel').classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'});
     }catch(error){
-      console.error('Customer booking error:',error);showToast('تعذر إرسال الطلب',error.message==='BOOKING_TIMEOUT'?'انتهت مهلة الاتصال. تحقق من ظهور الطلب في الإدارة قبل إعادة المحاولة.':' '+friendlyBookingDbError(error),'error');
+      console.error('Customer booking error:',error);showToast('تعذر إرسال الطلب',error.message==='BOOKING_TIMEOUT'?'انتهت مهلة الاتصال. تحقق من ظهور الطلب في الإدارة قبل إعادة المحاولة.':error.message==='BOOKING_OFFLINE'?'الإنترنت غير متصل. أعد المحاولة بعد عودة الاتصال.':friendlyBookingDbError(error),'error');
     }finally{customerBookingSending=false;setButtonBusy($('customerBookingSubmitBtn'),false)}
   }
 
