@@ -1811,7 +1811,7 @@
   function bookingInputProblem(id){
     const el=$(id),v=el.value.trim();
     if(id==='customerBookingName')return v.length<2?'اكتب الاسم (حرفين على الأقل).':'';
-    if(id==='customerBookingPhone')return !/^05\\d{8}$/.test(normalizeSaudiPhone(v))?'أدخل رقم جوال سعودي صحيح.':'';
+    if(id==='customerBookingPhone')return !/^05\d{8}$/.test(normalizeSaudiPhone(v))?'أدخل رقم جوال سعودي صحيح.':'';
     if(id==='customerPreferredDate'){
       if(!v)return 'اختر تاريخ المعاينة.';
       const date=new Date(v+'T12:00:00Z');
