@@ -1866,8 +1866,10 @@
     return local.startsWith('0')?'966'+local.slice(1):local;
   }
 
+  let customerBookingSubmitting=false;
   async function submitCustomerBooking(event){
     event.preventDefault();
+    if(customerBookingSubmitting)return;
     const form=$('customerBookingForm');if(!form.reportValidity())return;
     const phone=normalizeSaudiPhone($('customerBookingPhone').value);
     const lat=Number($('customerLocationLat').value),lng=Number($('customerLocationLng').value);
@@ -1880,6 +1882,7 @@
     const requestId=crypto.randomUUID?crypto.randomUUID():`${Date.now()}-${Math.random().toString(16).slice(2)}`;
     const extension=(image.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';
     const imagePath=`requests/${requestId}.${extension}`;
+    customerBookingSubmitting=true;
     setButtonBusy($('customerBookingSubmitBtn'),true,'جاري إرسال الطلب...');
     try{
       const {error:uploadError}=await state.client.storage.from('booking-facades').upload(imagePath,image,{contentType:image.type,upsert:false,cacheControl:'3600'});
@@ -1890,12 +1893,18 @@
         location_lat:lat,location_lng:lng,location_label:$('customerLocationLabel').value.trim()||null,
         facade_image_path:imagePath,customer_notes:$('customerBookingNotes').value.trim()||null,status:'pending'
       };
-      const {error}=await state.client.from('customer_booking_requests').insert(payload);if(error)throw error;
+      const {error}=await state.client.from('customer_booking_requests').insert(payload);
+      if(error){
+        const duplicateSameId=error.code==='23505'&&/customer_booking_requests_pkey/.test(String(error.message||'')+' '+String(error.details||''));
+        if(!duplicateSameId)throw error;
+        // The server reports that this exact randomly generated request ID already exists.
+        // Never retry a successful insert or create another booking.
+      }
       $('bookingReference').textContent=`REQ-${requestId.slice(0,8).toUpperCase()}`;
       $('bookingFormPanel').classList.add('hidden');$('bookingSuccessPanel').classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'});
     }catch(error){
       console.error('Customer booking error:',error);showToast('تعذر إرسال الطلب',friendlyBookingDbError(error),'error');
-    }finally{setButtonBusy($('customerBookingSubmitBtn'),false)}
+    }finally{customerBookingSubmitting=false;setButtonBusy($('customerBookingSubmitBtn'),false)}
   }
 
   function resetCustomerBookingForm(){
