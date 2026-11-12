@@ -421,7 +421,6 @@
 
   </style>
 <style media="screen">.voucher-creator-picker{border:1px solid #dce8f3;border-radius:13px;padding:12px 15px;margin-bottom:16px;background:#f8fbff}.voucher-creator-picker legend{font-weight:800;font-size:.82rem;padding:0 8px}.voucher-creator-options{display:flex;gap:12px;flex-wrap:wrap}.voucher-creator-options label{cursor:pointer;flex:1;min-width:115px}.voucher-creator-options input{position:absolute;opacity:0;width:1px;height:1px}.voucher-creator-options span{display:block;text-align:center;border:2px solid #d3e1ef;background:white;border-radius:11px;padding:11px;font-weight:800;transition:.15s}.voucher-creator-options input:checked+span{border-color:#176b9e;background:#e8f5fd;color:#125b89;box-shadow:0 0 0 2px #176b9e22}.voucher-creator-options input:focus-visible+span{outline:3px solid #71b6e8;outline-offset:2px}.voucher-creator-filter{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:13px}.voucher-creator-filter button{border:1px solid #cbd9e7;background:white;border-radius:10px;padding:8px 12px;color:#23506d;font-weight:700;cursor:pointer}.voucher-creator-filter button.active{background:#145b91;border-color:#145b91;color:white}</style>
-
 </head>
 <body>
   <section id="bookingScreen" class="booking-public-shell hidden">
@@ -1802,81 +1801,10 @@
     catch{const area=document.createElement('textarea');area.value=url;document.body.append(area);area.select();document.execCommand('copy');area.remove();showToast('تم نسخ الرابط','يمكنك إرساله للعملاء الآن')}
   }
 
-
-  function bookingSaudiToday(){
-    const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Riyadh',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
-    const p=Object.fromEntries(parts.map(x=>[x.type,x.value]));
-    return p.year+'-'+p.month+'-'+p.day;
-  }
-  function bookingInputProblem(id){
-    const el=$(id),v=el.value.trim();
-    if(id==='customerBookingName')return v.length<2?'اكتب الاسم (حرفين على الأقل).':'';
-    if(id==='customerBookingPhone')return !/^05\d{8}$/.test(normalizeSaudiPhone(v))?'أدخل رقم جوال سعودي صحيح.':'';
-    if(id==='customerPreferredDate'){
-      if(!v)return 'اختر تاريخ المعاينة.';
-      const date=new Date(v+'T12:00:00Z');
-      return v<=bookingSaudiToday()||Number.isNaN(date.getTime())||date.getUTCDay()===5?'اختر تاريخًا قادمًا غير يوم الجمعة.':'';
-    }
-    if(id==='customerPreferredTime')return !/^(09|10|11|12|13|14|15|16):00$/.test(v)?'اختر ساعة كاملة بين 9 صباحًا و4 عصرًا.':'';
-    if(id==='customerLocationLat'){
-      const a=$('customerLocationLat').value,b=$('customerLocationLng').value;
-      return !a||!b||!Number.isFinite(+a)||!Number.isFinite(+b)||Math.abs(+a)>90||Math.abs(+b)>180?'حدد موقع المنزل من الخريطة.':'';
-    }
-    if(id==='customerFacadeImage'){
-      const file=el.files?.[0];
-      return !file?'أرفق صورة واجهة المنزل.':!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>8*1024*1024?'الصورة يجب أن تكون JPG أو PNG أو WEBP وأقل من 8 ميجابايت.':'';
-    }
-    return '';
-  }
-  const bookingValidationIds=['customerBookingName','customerBookingPhone','customerPreferredDate','customerPreferredTime','customerLocationLat','customerFacadeImage'];
-  function updateBookingFormValidation(){
-    const form=$('customerBookingForm');if(!form)return false;
-    let firstProblem=null;
-    for(const id of bookingValidationIds){
-      const message=bookingInputProblem(id),el=$(id);
-      const target=id==='customerLocationLat'?$('customerLocationMap'):id==='customerFacadeImage'?el.closest('.upload-drop'):el;
-      let hint=document.getElementById('booking-validation-'+id);
-      if(!hint){
-        hint=document.createElement('small');hint.id='booking-validation-'+id;
-        hint.style.cssText='display:none;color:#b42318;font-size:12px;margin-top:5px;line-height:1.8';
-        target.insertAdjacentElement('afterend',hint);
-      }
-      hint.textContent=message;
-      const show=Boolean(message)&&el.dataset.bookingTouched==='1';
-      hint.style.display=show?'block':'none';
-      if(target!==el)target.style.borderColor=show?'#b42318':'';
-      else el.style.borderColor=show?'#b42318':'';
-      if(message&&!firstProblem)firstProblem={id,message};
-    }
-    const submit=$('customerBookingSubmitBtn');
-    if(!customerBookingSending){
-      submit.disabled=Boolean(firstProblem);
-      submit.title=firstProblem?.message||'';
-      submit.setAttribute('aria-disabled',String(Boolean(firstProblem)));
-    }
-    return !firstProblem;
-  }
-  function initializeBookingLiveValidation(){
-    for(const id of bookingValidationIds){
-      const el=$(id);
-      if(id!=='customerLocationLat'){
-        el.addEventListener('input',()=>{el.dataset.bookingTouched='1';updateBookingFormValidation()});
-        el.addEventListener('change',()=>{el.dataset.bookingTouched='1';updateBookingFormValidation()});
-        el.addEventListener('blur',()=>{el.dataset.bookingTouched='1';updateBookingFormValidation()});
-      }
-    }
-    const form=$('customerBookingForm');
-    form.addEventListener('submit',()=>{
-      bookingValidationIds.forEach(id=>$(id).dataset.bookingTouched='1');
-      updateBookingFormValidation();
-    },true);
-    updateBookingFormValidation();
-  }
   function initializeCustomerBookingPortal(){
     document.title='حجز موعد | حلول المنازل للعوازل';
-    $('customerPreferredDate').min=bookingSaudiToday();
-    if(!$('customerPreferredDate').value)$('customerPreferredDate').value=bookingSaudiToday();
-    initializeBookingLiveValidation();
+    $('customerPreferredDate').min=todayISO();
+    if(!$('customerPreferredDate').value)$('customerPreferredDate').value=todayISO();
     setTimeout(initCustomerBookingMap,80);
   }
 
@@ -1903,7 +1831,6 @@
     else customerBookingMarker.setLatLng([lat,lng]);
     customerBookingMarker.off('dragend').on('dragend',e=>{const point=e.target.getLatLng();setCustomerBookingLocation(point.lat,point.lng,false)});
     if(center)customerBookingMap.setView([lat,lng],16);
-    $('customerLocationLat').dataset.bookingTouched='1';updateBookingFormValidation();
   }
 
   function useCustomerCurrentLocation(){
@@ -1919,11 +1846,11 @@
 
   function previewCustomerFacadeImage(){
     const file=$('customerFacadeImage').files?.[0],preview=$('customerFacadePreview');
-    if(!file){preview.style.display='none';preview.removeAttribute('src');updateBookingFormValidation();return}
+    if(!file){preview.style.display='none';preview.removeAttribute('src');return}
     if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>8*1024*1024){
-      $('customerFacadeImage').value='';preview.style.display='none';updateBookingFormValidation();showToast('الصورة غير مقبولة','استخدم JPG أو PNG أو WEBP بحجم لا يتجاوز 8 ميجابايت','error');return;
+      $('customerFacadeImage').value='';preview.style.display='none';showToast('الصورة غير مقبولة','استخدم JPG أو PNG أو WEBP بحجم لا يتجاوز 8 ميجابايت','error');return;
     }
-    preview.src=URL.createObjectURL(file);preview.style.display='block';updateBookingFormValidation();
+    preview.src=URL.createObjectURL(file);preview.style.display='block';
   }
 
   function normalizeSaudiPhone(value){
@@ -1939,35 +1866,9 @@
     return local.startsWith('0')?'966'+local.slice(1):local;
   }
 
-  let customerBookingSending=false;
-  let customerBookingAttempt=null;
-  async function prepareBookingFacade(file){
-    if(file.size<=450000&&file.type==='image/jpeg')return file;
-    try{
-      const bitmap=await createImageBitmap(file);
-      const scale=Math.min(1,1600/Math.max(bitmap.width,bitmap.height));
-      const canvas=document.createElement('canvas');
-      canvas.width=Math.max(1,Math.round(bitmap.width*scale));
-      canvas.height=Math.max(1,Math.round(bitmap.height*scale));
-      canvas.getContext('2d',{alpha:false}).drawImage(bitmap,0,0,canvas.width,canvas.height);
-      bitmap.close?.();
-      const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',0.78));
-      canvas.width=canvas.height=0;
-      if(blob&&blob.size<file.size)return new File([blob],'facade.jpg',{type:'image/jpeg'});
-    }catch(error){console.warn('Facade optimization unavailable',error)}
-    return file;
-  }
-  async function bookingWithTimeout(promise,ms){
-    let timer;
-    try{return await Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('BOOKING_TIMEOUT')),ms)})])}
-    finally{clearTimeout(timer)}
-  }
   async function submitCustomerBooking(event){
     event.preventDefault();
-    if(customerBookingSending)return;
-    const form=$('customerBookingForm');
-    bookingValidationIds.forEach(id=>$(id).dataset.bookingTouched='1');
-    if(!updateBookingFormValidation()||!form.reportValidity())return;
+    const form=$('customerBookingForm');if(!form.reportValidity())return;
     const phone=normalizeSaudiPhone($('customerBookingPhone').value);
     const lat=Number($('customerLocationLat').value),lng=Number($('customerLocationLng').value);
     const image=$('customerFacadeImage').files?.[0];
@@ -1976,41 +1877,29 @@
     if(!image){showToast('الصورة مطلوبة','أرفق صورة واضحة لواجهة البيت','error');return}
     if(image.size>8*1024*1024){showToast('حجم الصورة كبير','الحد الأعلى 8 ميجابايت','error');return}
 
-    const signature=[phone,$('customerPreferredDate').value,$('customerPreferredTime').value,lat,lng,image.name,image.size,image.lastModified].join('|');
-    if(!customerBookingAttempt||customerBookingAttempt.signature!==signature){
-      customerBookingAttempt={signature,id:crypto.randomUUID(),uploaded:false};
-    }
-    const attempt=customerBookingAttempt;
-    const requestId=attempt.id;
-    customerBookingSending=true;
+    const requestId=crypto.randomUUID?crypto.randomUUID():`${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    const extension=(image.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';
+    const imagePath=`requests/${requestId}.${extension}`;
     setButtonBusy($('customerBookingSubmitBtn'),true,'جاري إرسال الطلب...');
     try{
-      const optimized=await bookingWithTimeout(prepareBookingFacade(image),8000);
-      if(!navigator.onLine)throw new Error('BOOKING_OFFLINE');
-      const extension=optimized.type==='image/jpeg'?'jpg':optimized.type==='image/png'?'png':'webp';
-      const imagePath=`requests/${requestId}.${extension}`;
-      if(!attempt.uploaded){
-        const {error:uploadError}=await bookingWithTimeout(state.client.storage.from('booking-facades').upload(imagePath,optimized,{contentType:optimized.type,upsert:false,cacheControl:'3600'}),15000);
-        if(uploadError&&!(uploadError.statusCode==='409'||/already exists|duplicate/i.test(uploadError.message||'')))throw uploadError;
-        attempt.uploaded=true;
-      }
+      const {error:uploadError}=await state.client.storage.from('booking-facades').upload(imagePath,image,{contentType:image.type,upsert:false,cacheControl:'3600'});
+      if(uploadError)throw uploadError;
       const payload={
         id:requestId,customer_name:$('customerBookingName').value.trim(),customer_phone:phone,
         preferred_date:$('customerPreferredDate').value,preferred_time:$('customerPreferredTime').value,
         location_lat:lat,location_lng:lng,location_label:$('customerLocationLabel').value.trim()||null,
         facade_image_path:imagePath,customer_notes:$('customerBookingNotes').value.trim()||null,status:'pending'
       };
-      const {error}=await bookingWithTimeout(state.client.from('customer_booking_requests').upsert(payload,{onConflict:'id',ignoreDuplicates:true}),12000);if(error)throw error;
-      customerBookingAttempt=null;
+      const {error}=await state.client.from('customer_booking_requests').insert(payload);if(error)throw error;
       $('bookingReference').textContent=`REQ-${requestId.slice(0,8).toUpperCase()}`;
       $('bookingFormPanel').classList.add('hidden');$('bookingSuccessPanel').classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'});
     }catch(error){
-      console.error('Customer booking error:',error);showToast('تعذر إرسال الطلب',error.message==='BOOKING_TIMEOUT'?'انتهت مهلة الاتصال. تحقق من ظهور الطلب في الإدارة قبل إعادة المحاولة.':error.message==='BOOKING_OFFLINE'?'الإنترنت غير متصل. أعد المحاولة بعد عودة الاتصال.':friendlyBookingDbError(error),'error');
-    }finally{customerBookingSending=false;setButtonBusy($('customerBookingSubmitBtn'),false)}
+      console.error('Customer booking error:',error);showToast('تعذر إرسال الطلب',friendlyBookingDbError(error),'error');
+    }finally{setButtonBusy($('customerBookingSubmitBtn'),false)}
   }
 
   function resetCustomerBookingForm(){
-    customerBookingAttempt=null;$('customerBookingForm').reset();$('customerPreferredDate').value=bookingSaudiToday();bookingValidationIds.forEach(id=>$(id).dataset.bookingTouched='0');updateBookingFormValidation();$('customerFacadePreview').style.display='none';$('customerFacadePreview').removeAttribute('src');$('customerLocationLat').value='';$('customerLocationLng').value='';$('customerLocationText').textContent='اضغط على الخريطة لتثبيت موقع المنزل.';
+    $('customerBookingForm').reset();$('customerPreferredDate').value=todayISO();$('customerFacadePreview').style.display='none';$('customerFacadePreview').removeAttribute('src');$('customerLocationLat').value='';$('customerLocationLng').value='';$('customerLocationText').textContent='اضغط على الخريطة لتثبيت موقع المنزل.';
     if(customerBookingMarker){customerBookingMap.removeLayer(customerBookingMarker);customerBookingMarker=null}
     $('bookingSuccessPanel').classList.add('hidden');$('bookingFormPanel').classList.remove('hidden');setTimeout(()=>customerBookingMap?.invalidateSize(),100);
   }
@@ -2261,13 +2150,8 @@
 
   function friendlyBookingDbError(error){
     const m=String(error?.message||'');
-    if(error?.code==='23505'&&/customer_booking_requests_pkey/.test(m))return 'تم استلام هذا الطلب مسبقًا، ولا تحتاج لإرساله مرة ثانية.';
-    if(/BOOKING_DUPLICATE_PENDING|BOOKING_DUPLICATE_ACTIVE/i.test(m))return 'يوجد طلب معاينة سابق على رقم الجوال نفسه ولم يُغلق بعد. لا تحتاج لإرسال الطلب مرة ثانية؛ سيتواصل معك الفريق لتأكيد الموعد.';
-    if(/BOOKING_DAY_FULL|BOOKING_SLOT_TAKEN/i.test(m))return 'الموعد المطلوب ممتلئ. اختر يومًا أو وقتًا آخر.';
-    if(/BOOKING_DATE_CLOSED/i.test(m))return 'اليوم المختار غير متاح للحجز. اختر تاريخًا قادمًا غير الجمعة.';
-    if(/BOOKING_TIME_CLOSED/i.test(m))return 'الوقت المختار غير متاح. اختر ساعة كاملة بين 9 صباحًا و4 عصرًا.';
-    if(/42P01|relation [^ ]+ does not exist|Bucket not found|storage bucket not found/i.test(m))return 'إعداد طلبات العملاء غير مكتمل. تواصل مع إدارة الموقع.';
-    if(/row-level security|permission denied/i.test(m))return 'تعذر حفظ الطلب بسبب صلاحيات الوصول. تواصل مع إدارة الموقع.';
+    if(/customer_booking_requests|booking-facades|relation .* does not exist|Bucket not found/i.test(m))return 'إعداد طلبات العملاء غير مكتمل. شغّل ملف supabase_booking_setup.sql مرة واحدة في Supabase';
+    if(/row-level security|permission denied/i.test(m))return 'صلاحيات قاعدة البيانات أو رفع الصور غير مفعلة. شغّل ملف supabase_booking_setup.sql';
     if(/payload too large|maximum allowed size/i.test(m))return 'حجم الصورة أكبر من الحد المسموح';
     if(/Failed to fetch|NetworkError/i.test(m))return 'تعذر الوصول إلى الخادم. تحقق من اتصال الإنترنت';
     return m||'حدث خطأ غير متوقع أثناء معالجة الطلب';
