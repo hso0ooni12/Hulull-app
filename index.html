@@ -560,6 +560,7 @@
             <article id="balanceCard" class="summary-card balance"><div class="summary-head"><span class="summary-label">الفرق بين الوارد والصادر</span><span class="summary-icon"><i class="fa-solid fa-scale-balanced"></i></span></div><div id="sumBalance" class="summary-value">0.00 ر.س</div><div class="summary-foot">الوارد − الصادر</div></article>
             <article class="summary-card"><div class="summary-head"><span class="summary-label">إجمالي العمليات</span><span class="summary-icon"><i class="fa-solid fa-file-invoice-dollar"></i></span></div><div id="sumEntriesCount" class="summary-value">0</div><div class="summary-foot">سند محفوظ</div></article>
           </div>
+          <section class="card" style="margin-bottom:18px"><div class="card-header"><h3 class="card-title"><i class="fa-solid fa-users"></i> الوارد والصادر حسب المسؤول</h3></div><div class="card-body"><div class="mini-stats"><div class="mini-stat"><span>موسى — إجمالي الوارد</span><b id="musaIncoming" style="color:var(--success)">0.00 ر.س</b></div><div class="mini-stat"><span>موسى — إجمالي الصادر</span><b id="musaOutgoing" style="color:var(--danger)">0.00 ر.س</b></div><div class="mini-stat"><span>عبدالله — إجمالي الوارد</span><b id="abdullahIncoming" style="color:var(--success)">0.00 ر.س</b></div><div class="mini-stat"><span>عبدالله — إجمالي الصادر</span><b id="abdullahOutgoing" style="color:var(--danger)">0.00 ر.س</b></div></div></div></section>
           <div class="dashboard-grid">
             <section class="card">
               <div class="card-header"><h3 class="card-title"><i class="fa-solid fa-clock"></i> أحدث السندات</h3><button class="btn btn-soft" data-goto="incoming">إدارة السندات</button></div>
@@ -1134,6 +1135,11 @@
 
   function renderDashboard(){
     const t=totals();
+    for(const [name,prefix] of [['موسى','musa'],['عبدالله','abdullah']]){
+      for(const [type,suffix] of [['incoming','Incoming'],['outgoing','Outgoing']]){
+        $(prefix+suffix).textContent=formatMoney(state.entries.filter(e=>e.entry_type===type&&String(e.creator_label||'').trim()===name).reduce((sum,e)=>sum+Number(e.amount||0),0));
+      }
+    }
     $('sumIncoming').textContent=formatMoney(t.sumIn);$('sumOutgoing').textContent=formatMoney(t.sumOut);$('sumBalance').textContent=formatMoney(t.balance);
     $('countIncoming').textContent=`${t.incoming.length} سند قبض`;$('countOutgoing').textContent=`${t.outgoing.length} سند صرف`;$('sumEntriesCount').textContent=String(state.entries.length);
     $('balanceCard').classList.toggle('negative',t.balance<0);
